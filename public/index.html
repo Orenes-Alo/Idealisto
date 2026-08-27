@@ -3,95 +3,305 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Idealisto — Oportunidades de inversión inmobiliaria</title>
-  <meta name="description" content="Idealisto: el marketplace de oportunidades de inversión inmobiliaria en España. Publica gratis tu activo verificado. Invierte con los números ya hechos.">
+  <title>Idealisto — Invierte en inmuebles con los números ya hechos</title>
+  <meta name="description" content="Idealisto es el marketplace de oportunidades de inversión inmobiliaria en España: activos con titularidad verificada, rentabilidad calculada y acceso antes que nadie. Publicar es gratis.">
+  <meta property="og:title" content="Idealisto — Oportunidades de inversión inmobiliaria">
+  <meta property="og:description" content="Activos verificados, con los números ya hechos. Únete a la lista de espera.">
+  <meta property="og:url" content="https://idealisto.es">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #0c1220;
+      --bg-2: #0f1729;
       --card: #131c30;
+      --line: rgba(147,160,184,.16);
       --text: #eef2f9;
       --muted: #93a0b8;
       --accent: #3b82f6;
       --accent-2: #60a5fa;
+      --green: #34d399;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: 'Outfit', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.25rem;
-      background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(59,130,246,.18), transparent);
+      line-height: 1.6;
     }
-    main { max-width: 640px; text-align: center; }
-    .logo {
-      font-size: clamp(2.4rem, 8vw, 3.6rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
+    .wrap { max-width: 1060px; margin: 0 auto; padding: 0 1.25rem; }
+    a { color: var(--accent-2); text-decoration: none; }
+
+    header.nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 0;
     }
+    .logo { font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; }
     .logo span { color: var(--accent-2); }
-    .tagline {
-      margin-top: 1rem;
-      font-size: clamp(1.05rem, 3vw, 1.3rem);
-      font-weight: 300;
-      color: var(--muted);
-      line-height: 1.55;
+    .nav a.cta-mini {
+      background: var(--accent); color: #fff; font-weight: 600; font-size: .9rem;
+      padding: .5rem 1.1rem; border-radius: 8px;
     }
-    .pills {
-      margin-top: 2.25rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: .6rem;
-      justify-content: center;
+
+    .hero {
+      padding: 4rem 0 3.5rem;
+      text-align: center;
+      background-image: radial-gradient(ellipse 80% 55% at 50% -10%, rgba(59,130,246,.20), transparent);
     }
-    .pill {
-      background: var(--card);
-      border: 1px solid rgba(147,160,184,.18);
-      border-radius: 999px;
-      padding: .5rem 1.1rem;
-      font-size: .88rem;
-      color: var(--muted);
+    .badge {
+      display: inline-block; font-size: .8rem; font-weight: 600; letter-spacing: .05em;
+      text-transform: uppercase; color: var(--accent-2);
+      border: 1px solid rgba(59,130,246,.4); background: rgba(59,130,246,.1);
+      border-radius: 999px; padding: .35rem 1rem; margin-bottom: 1.4rem;
     }
-    .soon {
-      margin-top: 2.5rem;
-      display: inline-block;
-      background: rgba(59,130,246,.12);
-      border: 1px solid rgba(59,130,246,.35);
-      color: var(--accent-2);
-      border-radius: 10px;
-      padding: .7rem 1.4rem;
-      font-weight: 600;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      font-size: .85rem;
+    h1 {
+      font-size: clamp(2.1rem, 6vw, 3.4rem); font-weight: 800;
+      letter-spacing: -0.03em; line-height: 1.12; max-width: 800px; margin: 0 auto;
     }
+    h1 em { font-style: normal; color: var(--accent-2); }
+    .hero p.sub {
+      margin: 1.3rem auto 0; max-width: 640px;
+      font-size: clamp(1rem, 2.6vw, 1.2rem); font-weight: 300; color: var(--muted);
+    }
+
+    form.waitlist {
+      margin: 2.2rem auto 0; max-width: 560px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 1.4rem; text-align: left;
+    }
+    .roles { display: flex; gap: .6rem; margin-bottom: .9rem; }
+    .roles label {
+      flex: 1; text-align: center; cursor: pointer;
+      border: 1px solid var(--line); border-radius: 10px; padding: .6rem .5rem;
+      font-size: .92rem; color: var(--muted); user-select: none; transition: all .15s;
+    }
+    .roles input { display: none; }
+    .roles input:checked + span { color: var(--text); }
+    .roles label:has(input:checked) {
+      border-color: var(--accent); background: rgba(59,130,246,.12); color: var(--text);
+    }
+    .row { display: flex; gap: .6rem; }
+    input[type=email] {
+      flex: 1; min-width: 0; background: var(--bg-2); border: 1px solid var(--line);
+      border-radius: 10px; padding: .8rem 1rem; color: var(--text);
+      font-family: inherit; font-size: 1rem;
+    }
+    input[type=email]:focus { outline: none; border-color: var(--accent); }
+    button.cta {
+      background: var(--accent); color: #fff; border: none; cursor: pointer;
+      font-family: inherit; font-weight: 600; font-size: 1rem;
+      padding: .8rem 1.4rem; border-radius: 10px; transition: background .15s;
+      white-space: nowrap;
+    }
+    button.cta:hover { background: #2f6fe0; }
+    button.cta:disabled { opacity: .6; cursor: default; }
+    .consent {
+      display: flex; gap: .55rem; align-items: flex-start;
+      margin-top: .9rem; font-size: .8rem; color: var(--muted);
+    }
+    .consent input { margin-top: .3rem; accent-color: var(--accent); }
+    .form-msg { margin-top: .8rem; font-size: .92rem; display: none; }
+    .form-msg.ok { display: block; color: var(--green); }
+    .form-msg.err { display: block; color: #f87171; }
+    .hp { position: absolute; left: -9999px; opacity: 0; }
+    .trust { margin-top: 1.1rem; font-size: .85rem; color: var(--muted); }
+
+    section { padding: 3.5rem 0; }
+    section.alt { background: var(--bg-2); }
+    h2 {
+      font-size: clamp(1.5rem, 4vw, 2.1rem); font-weight: 800;
+      letter-spacing: -0.02em; text-align: center; margin-bottom: .6rem;
+    }
+    .lead { text-align: center; color: var(--muted); max-width: 620px; margin: 0 auto 2.2rem; font-weight: 300; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    @media (max-width: 760px) { .grid, .grid2 { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 1.4rem;
+    }
+    .card .n {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 2rem; height: 2rem; border-radius: 8px; margin-bottom: .8rem;
+      background: rgba(59,130,246,.14); color: var(--accent-2); font-weight: 800;
+    }
+    .card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: .35rem; }
+    .card p { font-size: .92rem; color: var(--muted); }
+
+    ul.checks { list-style: none; max-width: 620px; margin: 0 auto; }
+    ul.checks li {
+      display: flex; gap: .7rem; align-items: flex-start;
+      padding: .55rem 0; font-size: .98rem;
+    }
+    ul.checks li::before { content: "✓"; color: var(--green); font-weight: 800; }
+    ul.checks li span b { font-weight: 600; }
+    ul.checks li span { color: var(--muted); }
+    ul.checks li span b { color: var(--text); }
+
+    .levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 900px; margin: 0 auto; }
+    @media (max-width: 760px) { .levels { grid-template-columns: 1fr; } }
+    .level { border: 1px solid var(--line); border-radius: 14px; padding: 1.3rem; background: var(--card); }
+    .level .tag {
+      font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--accent-2); margin-bottom: .5rem;
+    }
+    .level h3 { font-size: 1rem; margin-bottom: .3rem; }
+    .level p { font-size: .88rem; color: var(--muted); }
+    .level.top { border-color: rgba(59,130,246,.5); }
+
+    .final { text-align: center; }
+    .final .cta {
+      display: inline-block; margin-top: 1.4rem;
+      background: var(--accent); color: #fff; font-weight: 600;
+      padding: .85rem 1.8rem; border-radius: 10px; font-size: 1.05rem;
+    }
+
     footer {
-      margin-top: 3.5rem;
-      font-size: .8rem;
-      color: var(--muted);
-      opacity: .7;
+      border-top: 1px solid var(--line); padding: 2rem 0; text-align: center;
+      font-size: .82rem; color: var(--muted);
     }
+    footer nav { margin-top: .4rem; }
+    footer nav a { margin: 0 .6rem; color: var(--muted); }
   </style>
 </head>
 <body>
-  <main>
-    <h1 class="logo">Ideal<span>isto</span></h1>
-    <p class="tagline">El marketplace de oportunidades de inversión inmobiliaria.<br>Activos verificados, con los números ya hechos.</p>
-    <div class="pills">
-      <span class="pill">Publicar es gratis</span>
-      <span class="pill">Titularidad verificada</span>
-      <span class="pill">Rentabilidad calculada</span>
-      <span class="pill">Toda España</span>
+
+  <div class="wrap">
+    <header class="nav">
+      <div class="logo">Ideal<span>isto</span></div>
+      <a class="cta-mini" href="#unete">Lista de espera</a>
+    </header>
+  </div>
+
+  <div class="hero">
+    <div class="wrap">
+      <div class="badge">Lanzamiento 2026 · Lista de espera abierta</div>
+      <h1>Invierte en inmuebles con los <em>números ya hechos</em></h1>
+      <p class="sub">Idealisto es el marketplace de oportunidades de inversión inmobiliaria: activos con titularidad verificada, rentabilidad calculada, análisis de zona y acceso antes que nadie. Publicar es gratis, para siempre.</p>
+
+      <form class="waitlist" id="unete" autocomplete="off">
+        <div class="roles">
+          <label><input type="radio" name="role" value="invertir" checked><span>💼 Quiero invertir</span></label>
+          <label><input type="radio" name="role" value="publicar"><span>🏠 Quiero publicar</span></label>
+        </div>
+        <div class="row">
+          <input type="email" name="email" placeholder="tu@email.com" required>
+          <button class="cta" type="submit">Reservar mi plaza</button>
+        </div>
+        <input class="hp" type="text" name="web" tabindex="-1" aria-hidden="true">
+        <label class="consent">
+          <input type="checkbox" name="consent" required>
+          <span>Acepto la <a href="/privacidad.html" target="_blank">política de privacidad</a> y recibir comunicaciones sobre el lanzamiento de Idealisto.</span>
+        </label>
+        <div class="form-msg" id="formMsg"></div>
+      </form>
+      <p class="trust">Los primeros de la lista tendrán <b>condiciones de fundador</b> en el lanzamiento.</p>
     </div>
-    <div class="soon">Próximamente</div>
-  </main>
-  <footer>© 2026 Idealisto · idealisto.es</footer>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2>Buscar chollos hoy es un trabajo a jornada completa</h2>
+      <p class="lead">Cribar cientos de anuncios, montar un Excel por cada uno y rezar para que no haya cargas ocultas. Así se invierte hoy. Así no se debería invertir.</p>
+      <div class="grid">
+        <div class="card"><div class="n">1</div><h3>Define tu tesis</h3><p>Capital, zonas, tipo de activo, rentabilidad mínima, apetito de reforma. Idealisto deja de ser un buscador y se convierte en tu radar.</p></div>
+        <div class="card"><div class="n">2</div><h3>Recibe solo lo que encaja</h3><p>Alertas en tiempo real cuando entra una oportunidad que cumple tus criterios. Los suscriptores la ven antes que nadie.</p></div>
+        <div class="card"><div class="n">3</div><h3>Decide con datos y contacta</h3><p>Valoración automática, comparables reales, score de oportunidad, cargas y ocupación. Y contacto directo con el vendedor verificado.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2>Lo que verás en cada oportunidad</h2>
+      <p class="lead">No filtramos por habitaciones y ascensor. Filtramos por lo que te importa como inversor.</p>
+      <ul class="checks">
+        <li><span><b>Valoración automática (AVM)</b> con comparables reales de la zona y descuento sobre valor de mercado</span></li>
+        <li><span><b>Score de oportunidad 0–100</b>: descuento, rentabilidad, liquidez de zona, riesgo legal y de ocupación</span></li>
+        <li><span><b>Rentabilidad bruta, neta y cash-on-cash</b> con gastos reales españoles (ITP, notaría, registro, plusvalía…)</span></li>
+        <li><span><b>Nota simple, cargas registrales y estado de ocupación</b> revisados antes de publicar</span></li>
+        <li><span><b>Análisis de zona</b>: precios, rentabilidad por barrio, tiempo medio de venta, avisos de VPO y zona tensionada</span></li>
+        <li><span><b>Acceso anticipado</b>: las mejores operaciones, 48–72 h antes que el resto</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>¿Tienes un activo? Publicar es gratis. Siempre.</h2>
+      <p class="lead">Propietarios, inmobiliarias, promotores y personal shoppers. Sin coste, sin comisión de la plataforma, con leads que pagan por poder contactarte.</p>
+      <div class="grid">
+        <div class="card"><div class="n">€0</div><h3>Cero coste, cero fricción</h3><p>Publica en minutos con autorrelleno desde la referencia catastral. Las inmobiliarias podrán sincronizar su cartera completa por feed.</p></div>
+        <div class="card"><div class="n">✓</div><h3>Contactos serios, no curiosos</h3><p>Cada persona que te contacta paga una suscripción por poder hacerlo. Menos llamadas, más ofertas reales.</p></div>
+        <div class="card"><div class="n">📊</div><h3>Inteligencia sobre tu activo</h3><p>Termómetro de interés y sugerencia de precio según el mercado real de tu zona. Gratis, a cambio de documentar bien tu activo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <h2>La verificación es el producto</h2>
+      <p class="lead">Ningún activo se publica sin pasar el protocolo de validación de titularidad: solo el propietario legítimo o su encargado acreditado pueden poner un activo a la venta.</p>
+      <div class="levels">
+        <div class="level"><div class="tag">Nivel 1</div><h3>Básico</h3><p>Referencia catastral válida, datos coherentes con Catastro y declaración responsable del publicador.</p></div>
+        <div class="level"><div class="tag">Nivel 2</div><h3>Verificado</h3><p>Nota simple reciente contrastada: titularidad, cargas y superficie comprobadas contra la identidad del publicador.</p></div>
+        <div class="level top"><div class="tag">Nivel 3</div><h3>Verificado Legal</h3><p>Revisión jurídica completa por nuestro despacho: titularidad, cargas, ocupación y documentación de encargo de venta.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>Sé de los primeros</h2>
+      <p class="lead">Estamos construyendo Idealisto sobre la tecnología de valoración y análisis del grupo inversionnpl.com. Únete a la lista de espera y consigue condiciones de fundador.</p>
+      <a class="cta" href="#unete">Unirme a la lista de espera</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      © 2026 Idealisto · idealisto.es
+      <nav>
+        <a href="/privacidad.html">Privacidad y aviso legal</a>
+        <a href="https://inversionnpl.com" target="_blank" rel="noopener">¿Buscas NPL y subastas? → inversionnpl.com</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    const form = document.querySelector('form.waitlist');
+    const msg = document.getElementById('formMsg');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector('button.cta');
+      const data = {
+        email: form.email.value.trim(),
+        role: form.role.value,
+        web: form.web.value
+      };
+      btn.disabled = true;
+      msg.className = 'form-msg';
+      try {
+        const res = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('bad status');
+        form.querySelector('.row').style.display = 'none';
+        form.querySelector('.roles').style.display = 'none';
+        form.querySelector('.consent').style.display = 'none';
+        msg.textContent = '✓ ¡Plaza reservada! Te avisaremos en cuanto abramos las puertas.';
+        msg.className = 'form-msg ok';
+      } catch {
+        msg.textContent = 'No se pudo enviar. Inténtalo de nuevo en unos minutos.';
+        msg.className = 'form-msg err';
+        btn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
