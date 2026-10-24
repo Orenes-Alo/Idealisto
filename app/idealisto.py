@@ -38,7 +38,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
                                RedirectResponse, Response)
 
-from . import contenido
+from . import calculadoras, contenido, fiscal
 from .callejero import NOMBRES_PROV, PROVINCIAS, Callejero, CallejeroError, norm
 from .rc import normalizar_rc, validar_rc
 from .zonas import Zonas
@@ -337,7 +337,7 @@ FOOT = r"""
     <div><strong>__BRAND__</strong> · __LEGAL__<br>
       Valoraciones automáticas orientativas. No constituyen una tasación oficial (Orden ECO/805/2003).<br>
       Datos catastrales: Dirección General del Catastro.</div>
-    <div><a href="/metodologia/">Metodología</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
+    <div><a href="/metodologia/">Metodología</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
   </div>
 </footer>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
@@ -448,6 +448,61 @@ def buscador(modo: str, prov: str = "", mun: str = "") -> str:
 
 SECUNDARIAS = {slug: render_secundaria(slug) for slug in contenido.PAGINAS}
 ZONAS = Zonas(RAIZ / "data" / "zonas.json")
+
+
+def render_calc(slug: str | None) -> str:
+    """/calculadoras/ (slug None) o una calculadora."""
+    fiscal_js = json.dumps(fiscal.para_js(), ensure_ascii=False).replace("</", "<\\/")
+    if slug is None:
+        path, nombre = "/calculadoras/", "Calculadoras"
+        tarjetas = "".join(
+            f'<a class="card calc-card" href="/calculadoras/{k}/"><h3>{escape(c["nombre"])}</h3><p>{escape(c["desc"])}</p></a>'
+            for k, c in calculadoras.CALCS.items())
+        cuerpo = (f'<main class="wrap doc ancha"><p class="crumbs"><a href="/">Inicio</a> › Calculadoras</p>'
+                  f'<h1>Calculadoras de impuestos y rentabilidad inmobiliaria 2026</h1>'
+                  f'<p class="fecha">Actualizado el {_fecha_es(fiscal.ACTUALIZADO)}</p>'
+                  '<p class="answer"><strong>Respuesta rápida:</strong> calcula el ITP de tu compra, lo que pagarás por heredar o recibir '
+                  'en donación un inmueble, la plusvalía municipal de una venta y la rentabilidad de un piso en alquiler, con los tipos '
+                  'de 2026 de cada comunidad autónoma.</p>'
+                  f'<div class="grid-calcs">{tarjetas}</div></main>')
+        graph = [_org(), {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE_URL + "/"},
+            {"@type": "ListItem", "position": 2, "name": nombre, "item": SITE_URL + path}]}]
+        return pagina(path, "Calculadoras inmobiliarias 2026: ITP, Sucesiones y plusvalía",
+                      "Calculadoras gratuitas de ITP, Sucesiones y Donaciones, plusvalía municipal y rentabilidad de alquiler con los tipos de 2026.",
+                      cuerpo, _ld(graph))
+    c = calculadoras.CALCS[slug]
+    path = f"/calculadoras/{slug}/"
+    html_c = c["html"]
+    for marca, fn in calculadoras.TABLAS.items():
+        if marca in html_c:
+            html_c = html_c.replace(marca, fn())
+    faq = "".join(f"<details><summary>{escape(q)}</summary><p>{escape(a)}</p></details>" for q, a in c["faq"])
+    cuerpo = (f'<main class="wrap doc ancha"><p class="crumbs"><a href="/">Inicio</a> › <a href="/calculadoras/">Calculadoras</a> › '
+              f'{escape(c["nombre"])}</p><h1>{escape(c["h1"])}</h1>'
+              f'<p class="fecha">Actualizado el {_fecha_es(fiscal.ACTUALIZADO)}</p>'
+              f'<p class="answer"><strong>Respuesta rápida:</strong> {escape(c["respuesta"])}</p>'
+              f'<div class="caja-calc">{c["form"]}</div>{html_c}'
+              '<div class="cta-box"><div><strong>¿Cuánto vale el inmueble?</strong><br>Pega su referencia catastral y míralo en '
+              'segundos, gratis y sin email.</div><a class="btn" href="/#valorar">Valorar gratis</a></div>'
+              f'<h2>Preguntas frecuentes</h2>{faq}<p class="hint">Cálculo orientativo con la normativa vigente a la fecha indicada. '
+              'No sustituye el asesoramiento de un profesional.</p></main>'
+              f'<script type="application/json" id="fiscal-json">{fiscal_js}</script><script src="/calc.js?v=1" defer></script>')
+    graph = [_org(),
+             {"@type": "WebApplication", "name": c["nombre"], "url": SITE_URL + path, "applicationCategory": "FinanceApplication",
+              "operatingSystem": "Web", "inLanguage": "es-ES", "isAccessibleForFree": True,
+              "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"}, "dateModified": fiscal.ACTUALIZADO,
+              "provider": {"@id": f"{SITE_URL}/#org"}},
+             {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
+                                                 for q, a in c["faq"]]},
+             {"@type": "BreadcrumbList", "itemListElement": [
+                 {"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE_URL + "/"},
+                 {"@type": "ListItem", "position": 2, "name": "Calculadoras", "item": SITE_URL + "/calculadoras/"},
+                 {"@type": "ListItem", "position": 3, "name": c["nombre"], "item": SITE_URL + path}]}]
+    return pagina(path, c["title"][:60], c["desc"][:158], cuerpo, _ld(graph))
+
+
+CALC_CACHE = {None: render_calc(None), **{k: render_calc(k) for k in calculadoras.CALCS}}
 _BUSCADOR_ZONA = re.compile(r"__BUSCADOR__([^|]*)\|(.*?)__")
 
 
@@ -640,6 +695,23 @@ def precio_vivienda(resto: str = ""):
     return HTMLResponse(render_zona(path, tipo, code), headers={"Cache-Control": "public, max-age=3600"})
 
 
+@app.get("/calculadoras/", response_class=HTMLResponse)
+def calcs_indice():
+    return HTMLResponse(CALC_CACHE[None], headers={"Cache-Control": "public, max-age=3600"})
+
+
+@app.get("/calculadoras/{slug}/", response_class=HTMLResponse)
+def calc(slug: str):
+    if slug not in calculadoras.CALCS:
+        return no_encontrada()
+    return HTMLResponse(CALC_CACHE[slug], headers={"Cache-Control": "public, max-age=3600"})
+
+
+@app.get("/calculadoras/{slug}")
+def calc_sin_barra(slug: str):
+    return RedirectResponse(f"/calculadoras/{slug}/", 301) if slug in calculadoras.CALCS else no_encontrada()
+
+
 @app.get("/precio-vivienda")
 def precio_vivienda_sin_barra():
     return RedirectResponse("/precio-vivienda/", 301)
@@ -690,7 +762,8 @@ Allow: /
 Sitemap: {SITE_URL}/sitemap.xml
 """
 
-SITEMAP_PATHS = ["/"] + [f"/{s}/" for s in contenido.PAGINAS if s not in ("privacidad", "aviso-legal")]
+SITEMAP_PATHS = (["/"] + [f"/{s}/" for s in contenido.PAGINAS if s not in ("privacidad", "aviso-legal")]
+                 + ["/calculadoras/"] + [f"/calculadoras/{k}/" for k in calculadoras.CALCS])
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
@@ -742,7 +815,7 @@ def llms():
 
 
 ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "og.png": "image/png",
-             "buscador.js": "application/javascript", "sw.js": "application/javascript",
+             "buscador.js": "application/javascript", "sw.js": "application/javascript", "calc.js": "application/javascript",
              "manifest.webmanifest": "application/manifest+json",
              "icono-192.png": "image/png", "icono-512.png": "image/png"}
 
