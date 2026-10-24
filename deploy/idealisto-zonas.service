@@ -1,0 +1,10 @@
+[Unit]
+Description=Idealisto: regenera data/zonas.json (precio por provincia y municipio)
+
+[Service]
+Type=oneshot
+User=orenes
+WorkingDirectory=/home/orenes/idealisto
+EnvironmentFile=/home/orenes/idealisto/.env
+ExecStart=/home/orenes/idealisto/.venv/bin/python -m app.zonas_datos
+Nice=10

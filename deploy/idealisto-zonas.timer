@@ -1,0 +1,9 @@
+[Unit]
+Description=Idealisto: datos de zonas cada lunes 06:30 (tras pg_dump 03:30 y restic 05:00)
+
+[Timer]
+OnCalendar=Mon *-*-* 06:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

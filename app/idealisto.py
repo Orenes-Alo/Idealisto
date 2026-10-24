@@ -41,6 +41,7 @@ from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse, PlainTe
 from . import contenido
 from .callejero import NOMBRES_PROV, PROVINCIAS, Callejero, CallejeroError, norm
 from .rc import normalizar_rc, validar_rc
+from .zonas import Zonas
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CONFIGURACIÓN
@@ -294,7 +295,7 @@ HEAD = r"""<!doctype html>
 <link rel="canonical" href="__CANON__">
 <link rel="alternate" hreflang="es-ES" href="__CANON__">
 <link rel="alternate" hreflang="x-default" href="__CANON__">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<meta name="robots" content="__ROBOTS__">
 <meta name="theme-color" content="#0f3d3e">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_ES">
@@ -321,7 +322,7 @@ __GA4__
   <header class="top">
     <a class="logo" href="/" aria-label="__BRAND__ inicio"><b>i</b>__BRAND__</a>
     <nav aria-label="principal">
-      <a href="/#como-funciona">Cómo funciona</a>
+      <a href="/precio-vivienda/">Precios por zona</a>
       <a href="/referencia-catastral/">Referencia catastral</a>
       <a href="/valor-de-referencia/">Valor de referencia</a>
       <a href="/#faq">Preguntas</a>
@@ -336,7 +337,7 @@ FOOT = r"""
     <div><strong>__BRAND__</strong> · __LEGAL__<br>
       Valoraciones automáticas orientativas. No constituyen una tasación oficial (Orden ECO/805/2003).<br>
       Datos catastrales: Dirección General del Catastro.</div>
-    <div><a href="/metodologia/">Metodología</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
+    <div><a href="/metodologia/">Metodología</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
   </div>
 </footer>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
@@ -353,8 +354,9 @@ def _ga4() -> str:
 
 
 def pagina(path: str, title: str, desc: str, cuerpo: str, jsonld: str,
-           og_title: str | None = None, og_desc: str | None = None) -> str:
+           og_title: str | None = None, og_desc: str | None = None, noindex: bool = False) -> str:
     return ((HEAD + cuerpo + FOOT)
+            .replace("__ROBOTS__", "noindex,follow" if noindex else "index,follow,max-snippet:-1,max-image-preview:large")
             .replace("__JSONLD__", jsonld)
             .replace("__CSS__", CSS)
             .replace("__GA4__", _ga4())
@@ -437,13 +439,22 @@ def render_secundaria(slug: str) -> str:
     return pagina(path, p["title"], p["desc"], cuerpo, _ld(graph))
 
 
-def buscador(modo: str) -> str:
+def buscador(modo: str, prov: str = "", mun: str = "") -> str:
     provs = json.dumps(PROVINCIAS, ensure_ascii=False).replace("</", "<\\/")
     return (f'<script type="application/json" id="provincias-json">{provs}</script>'
-            f'<div class="buscador" data-modo="{modo}"></div><script src="/buscador.js?v=1" defer></script>')
+            f'<div class="buscador" data-modo="{modo}" data-prov="{prov}" data-mun="{mun}"></div>'
+            '<script src="/buscador.js?v=2" defer></script>')
 
 
 SECUNDARIAS = {slug: render_secundaria(slug) for slug in contenido.PAGINAS}
+ZONAS = Zonas(RAIZ / "data" / "zonas.json")
+_BUSCADOR_ZONA = re.compile(r"__BUSCADOR__([^|]*)\|(.*?)__")
+
+
+def render_zona(path: str, tipo: str, code: str | None) -> str:
+    z = ZONAS.pagina(tipo, code, SITE_URL)
+    cuerpo = _BUSCADOR_ZONA.sub(lambda m: buscador("enlace", m.group(1), m.group(2)), z["cuerpo"])
+    return pagina(path, z["title"], z["desc"], cuerpo, _ld([_org()] + z["graph"]), noindex=z["noindex"])
 _HOME_CACHE = render_home()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -616,6 +627,24 @@ def api_inmuebles(request: Request, prov: str = "", mun: str = "", tv: str = "",
     return _callejero(lambda: CALLEJERO.inmuebles(prov, norm(mun), tv.strip(), norm(calle), num.strip()))
 
 
+# ── Precio de la vivienda por zona ──────────────────────────────────────────
+@app.get("/precio-vivienda/{resto:path}", response_class=HTMLResponse)
+def precio_vivienda(resto: str = ""):
+    partes = [x for x in resto.split("/") if x]
+    r = ZONAS.resolver(partes)
+    if not r:
+        return no_encontrada()
+    path, tipo, code = r
+    if partes and not resto.endswith("/"):
+        return RedirectResponse(path, 301)
+    return HTMLResponse(render_zona(path, tipo, code), headers={"Cache-Control": "public, max-age=3600"})
+
+
+@app.get("/precio-vivienda")
+def precio_vivienda_sin_barra():
+    return RedirectResponse("/precio-vivienda/", 301)
+
+
 # ── Páginas secundarias ─────────────────────────────────────────────────────
 @app.get("/{slug}/", response_class=HTMLResponse)
 def secundaria(slug: str):
@@ -661,7 +690,7 @@ Allow: /
 Sitemap: {SITE_URL}/sitemap.xml
 """
 
-SITEMAP_PATHS = ["/"] + [f"/{s}/" for s in contenido.PAGINAS]
+SITEMAP_PATHS = ["/"] + [f"/{s}/" for s in contenido.PAGINAS if s not in ("privacidad", "aviso-legal")]
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
@@ -669,12 +698,29 @@ def robots():
     return ROBOTS
 
 
+def _urlset(paths: list[str], lastmod: str) -> Response:
+    urls = "".join(f"<url><loc>{escape(SITE_URL + p)}</loc><lastmod>{lastmod}</lastmod></url>" for p in paths)
+    return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                    f'{urls}</urlset>', media_type="application/xml")
+
+
 @app.get("/sitemap.xml")
 def sitemap():
-    urls = "".join(f"<url><loc>{escape(SITE_URL + p)}</loc><lastmod>{LAST_MOD}</lastmod></url>"
-                   for p in SITEMAP_PATHS)
-    xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
-    return Response(xml, media_type="application/xml")
+    ZONAS._cargar()
+    mods = {"paginas": LAST_MOD, "zonas": ZONAS.fecha.isoformat()}
+    items = "".join(f"<sitemap><loc>{SITE_URL}/sitemap-{k}.xml</loc><lastmod>{v}</lastmod></sitemap>" for k, v in mods.items())
+    return Response('<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                    f'{items}</sitemapindex>', media_type="application/xml")
+
+
+@app.get("/sitemap-paginas.xml")
+def sitemap_paginas():
+    return _urlset(SITEMAP_PATHS, LAST_MOD)
+
+
+@app.get("/sitemap-zonas.xml")
+def sitemap_zonas():
+    return _urlset(ZONAS.urls_indexables(), ZONAS.fecha.isoformat())
 
 
 @app.get("/llms.txt", response_class=PlainTextResponse)

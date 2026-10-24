@@ -61,6 +61,18 @@
       } catch (e) { err.textContent = e.message; }
     }, 350));
     num.addEventListener('input', listo);
+
+    // Páginas de zona: provincia y municipio ya puestos (al abrir el desplegable, para no mover la página al cargar).
+    if (root.dataset.prov) {
+      let hecho = false;
+      const prefill = () => {
+        if (hecho) return; hecho = true;
+        prov.value = root.dataset.prov; prov.dispatchEvent(new Event('change'));
+        if (root.dataset.mun) { mun.value = root.dataset.mun; mun.dispatchEvent(new Event('input')); }
+      };
+      const det = root.closest('details');
+      if (det) det.addEventListener('toggle', () => { if (det.open) prefill(); }); else prefill();
+    }
     num.addEventListener('keydown', e => { if (e.key === 'Enter' && !go.disabled) { e.preventDefault(); go.click(); } });
 
     go.addEventListener('click', async () => {
