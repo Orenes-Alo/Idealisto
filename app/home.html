@@ -1,0 +1,222 @@
+<div class="wrap">
+  <main>
+  <div class="hero">
+    <div>
+      <span class="eyebrow">Gratis · Sin registro · Toda España</span>
+      <h1>¿Cuánto vale tu casa? Descúbrelo con su referencia catastral</h1>
+      <p class="lead">20 caracteres, un precio. Valoramos pisos, casas, garajes y trasteros sin preguntarte metros, habitaciones ni email.</p>
+      <p class="answer"><strong>Respuesta rápida:</strong> para saber cuánto vale un inmueble en España, introduce su referencia catastral (está en el recibo del IBI) en __BRAND__. En segundos obtienes su valor de mercado estimado con un rango, el precio por m², la comparación con tu zona y el precio al que se suele cerrar la venta.</p>
+      <ul class="trust">
+        <li>Resultado sin dejar tus datos</li>
+        <li>No vendemos tus datos a inmobiliarias</li>
+        <li><a href="/metodologia/">Metodología pública</a></li>
+      </ul>
+    </div>
+
+    <div class="tool" id="valorar">
+      <form id="f" novalidate>
+        <label for="rc">Referencia catastral del inmueble</label>
+        <div class="rc-row">
+          <input id="rc" name="rc" inputmode="text" autocomplete="off" autocapitalize="characters"
+                 spellcheck="false" maxlength="30" placeholder="9872023VH5797S0001WX" aria-describedby="h e">
+          <button class="btn" id="go" type="submit">Valorar gratis</button>
+        </div>
+        <p class="hint" id="h"><span class="count" id="cnt">0</span>/20 caracteres · ¿No la tienes?
+          <a href="__SEDE__" target="_blank" rel="noopener">Búscala por dirección en el Catastro</a></p>
+        <p class="err" id="e" role="alert" aria-live="polite"></p>
+        <p class="loading" id="ld">Consultando el Catastro y los inmuebles comparables de la zona… puede tardar unos segundos.</p>
+        <div class="ficha" id="fi" hidden></div>
+      </form>
+
+      <div class="result" id="r" aria-live="polite">
+        <div class="print-head"><strong>__BRAND__</strong> · Valoración orientativa · <span id="p-fecha"></span><br><small id="p-rc"></small></div>
+        <small id="r-dir" style="color:var(--muted)"></small>
+        <div class="big" id="r-val">—</div>
+        <div class="range" id="r-range"></div>
+        <div class="bar" aria-hidden="true"><i id="r-pin" style="left:50%"></i></div>
+        <div class="kv">
+          <div><small>Precio por m²</small><strong id="r-m2">—</strong></div>
+          <div><small>Media de la zona</small><strong id="r-zona">—</strong></div>
+          <div><small>Superficie · Uso</small><strong id="r-sup">—</strong></div>
+          <div><small>Año · Confianza</small><strong id="r-anio">—</strong></div>
+        </div>
+        <div class="cierre" id="r-cierre" hidden></div>
+        <div class="compare" id="r-cmp">¿Vas a comprar, heredar o donar? Compara esta cifra con el <a href="/valor-de-referencia/">valor de referencia del Catastro</a>: si el de referencia es más alto, podrías tributar de más.</div>
+
+        <div class="acciones">
+          <button class="btn small" type="button" id="pdf">Descargar informe (PDF)</button>
+          <button class="btn ghost small" type="button" id="otra">Valorar otro inmueble</button>
+        </div>
+
+        <form class="lead-form" id="lf" hidden>
+          <strong>¿Te lo enviamos por email?</strong>
+          <div class="row">
+            <input type="email" name="email" required placeholder="tu@email.com" aria-label="Email">
+            <select name="perfil" aria-label="Perfil">
+              <option value="propietario">Soy propietario</option>
+              <option value="comprador">Quiero comprar</option>
+              <option value="inversor">Soy inversor</option>
+              <option value="profesional">Soy profesional</option>
+            </select>
+          </div>
+          <div class="row">
+            <select name="motivo" aria-label="Motivo">
+              <option value="curiosidad">Solo por curiosidad</option>
+              <option value="vender">Vender</option>
+              <option value="herencia">Herencia / donación</option>
+              <option value="divorcio">Divorcio</option>
+              <option value="impuestos">Impuestos (ITP, plusvalía...)</option>
+              <option value="hipoteca">Hipoteca</option>
+              <option value="subasta">Subasta / inversión</option>
+            </select>
+            <button class="btn ghost" type="submit">Enviarme el informe</button>
+          </div>
+          <label class="chk"><input type="checkbox" name="ok" required> Acepto la <a href="/privacidad/">política de privacidad</a>. Solo usaremos tu email para enviarte el informe.</label>
+          <p class="err" id="lf-e" aria-live="polite"></p>
+        </form>
+        <p class="disclaimer">Valoración automática orientativa a partir de datos del Catastro e inmuebles comparables en venta. No es una tasación oficial (Orden ECO/805/2003) ni sirve para una hipoteca. <a href="/metodologia/">Cómo la calculamos</a>.</p>
+      </div>
+    </div>
+  </div>
+  </main>
+</div>
+
+<section class="alt" id="como-funciona">
+  <div class="wrap">
+    <h2>Cómo saber cuánto vale tu casa en 1 minuto</h2>
+    <div class="grid3">__HOWTO__</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Cualquier vivienda, y también sus anejos</h2>
+    <p class="lead">Si tiene referencia catastral propia, la valoramos. Y si la vivienda incluye garaje o trastero en la misma referencia, los valoramos aparte en lugar de sumarlos como si fueran salón.</p>
+    <div class="grid5">
+      <div class="card chip"><span>🏢</span><strong>Pisos y áticos</strong></div>
+      <div class="card chip"><span>🏠</span><strong>Casas y chalés</strong></div>
+      <div class="card chip"><span>🚗</span><strong>Plazas de garaje</strong></div>
+      <div class="card chip"><span>📦</span><strong>Trasteros</strong></div>
+      <div class="card chip"><span>🌳</span><strong>Viviendas en rústico</strong></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="valores">
+  <div class="wrap">
+    <h2>Valor de mercado, valor de referencia y valor catastral</h2>
+    <p class="lead">No son lo mismo y confundirlos sale caro en una herencia, una donación o una compraventa.</p>
+    <div class="scroll"><table class="vs">
+      <thead><tr><th>Valor</th><th>Qué es</th><th>Para qué se usa</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Valor de mercado</strong></td><td>Precio al que razonablemente se vendería hoy. Es el que te da __BRAND__.</td><td>Vender, comprar, negociar, repartir una herencia.</td></tr>
+        <tr><td><strong>Valor de referencia</strong></td><td>Lo fija el Catastro cada año para cada inmueble.</td><td>Base mínima del ITP y de Sucesiones y Donaciones desde 2022.</td></tr>
+        <tr><td><strong>Valor catastral</strong></td><td>Valor administrativo, normalmente muy inferior al de mercado.</td><td>IBI, IRPF (imputación de rentas) y plusvalía municipal.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="hint">Si el valor de referencia de tu inmueble supera su valor de mercado, podrías estar pagando de más en impuestos. <a href="/valor-de-referencia/">Cómo comprobarlo y qué hacer</a>.</p>
+  </div>
+</section>
+
+<section id="inversores">
+  <div class="wrap">
+    <div class="inv">
+      <div>
+        <span class="eyebrow" style="background:#ffffff1a;color:var(--accent)">Para inversores</span>
+        <h2>¿Subasta del BOE, piso de banco o activo adjudicado?</h2>
+        <p>Copia la referencia catastral del edicto o de la ficha y calcula al instante el descuento sobre mercado antes de pujar.</p>
+        <ul>
+          <li>Valor de mercado vs. valor de subasta</li>
+          <li>€/m² frente a la media de la zona</li>
+          <li>Precio de cierre estimado, no solo el de anuncio</li>
+        </ul>
+      </div>
+      <div style="text-align:center">
+        <a class="btn" href="#valorar">Valorar un activo</a>
+        <p class="hint" style="color:#cfe3dd">¿Carteras o API? <a style="color:var(--accent)" href="mailto:alonso.orenes@onmi.es?subject=Idealisto%20para%20profesionales">Escríbenos</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="faq">
+  <div class="wrap" style="max-width:820px">
+    <h2>Preguntas frecuentes</h2>
+    __FAQ__
+  </div>
+</section>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const rc=$('#rc'),cnt=$('#cnt'),err=$('#e'),go=$('#go'),res=$('#r'),ld=$('#ld'),fi=$('#fi');
+  const EMAIL=__EMAIL_ACTIVO__;
+  const eur=n=>n==null?'—':new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n);
+  const norm=v=>v.replace(/[\s\-\.\/]/g,'').toUpperCase();
+  let lastRC='';
+  const upd=()=>{cnt.textContent=norm(rc.value).length};
+  rc.addEventListener('input',upd);
+  // Prefill por URL: ?rc=XXXX (enlaces desde inversionnpl.com, edictos, emails) y valora directamente
+  const q=new URLSearchParams(location.search).get('rc');
+  if(q){rc.value=q;upd();setTimeout(()=>$('#f').requestSubmit(),50);}
+
+  function fichaTxt(f){
+    if(!f) return '';
+    const p=[f.direccion,f.uso,f.superficie_m2?f.superficie_m2+' m²':null,f.anio_construccion?'año '+f.anio_construccion:null].filter(Boolean);
+    return p.length?'Datos del Catastro: '+p.join(' · '):'';
+  }
+
+  $('#f').addEventListener('submit',async ev=>{
+    ev.preventDefault(); err.textContent=''; fi.hidden=true;
+    const v=norm(rc.value);
+    if(v.length!==20){err.textContent=v.length===14?'Esa es la referencia de la finca (14). Necesitamos los 20 caracteres del inmueble: mira el recibo del IBI.':'La referencia catastral tiene 20 caracteres.';return;}
+    go.disabled=true; go.textContent='Calculando…'; ld.style.display='block'; res.style.display='none';
+    try{
+      const r=await fetch('/api/valorar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rc:v})});
+      const d=await r.json();
+      if(!r.ok){
+        err.textContent=d.error||'No hemos podido valorar este inmueble.';
+        const t=fichaTxt(d.ficha); if(t){fi.textContent=t;fi.hidden=false;}
+        if(window.gtag) gtag('event','valoracion_error',{codigo:d.codigo||r.status});
+        return;
+      }
+      lastRC=v; pinta(d);
+      if(window.gtag) gtag('event','valoracion_ok',{uso:d.uso||''});
+    }catch(e){err.textContent='Error de conexión. Inténtalo de nuevo.';}
+    finally{go.disabled=false; go.textContent='Valorar gratis'; ld.style.display='none';}
+  });
+
+  function pinta(d){
+    $('#r-dir').textContent=d.direccion||'';
+    $('#r-val').textContent=eur(d.valor_central);
+    $('#r-range').textContent=(d.valor_min&&d.valor_max)?`Rango estimado: ${eur(d.valor_min)} – ${eur(d.valor_max)}`:'';
+    if(d.valor_min&&d.valor_max&&d.valor_max>d.valor_min){const p=(d.valor_central-d.valor_min)/(d.valor_max-d.valor_min)*100;$('#r-pin').style.left=Math.max(4,Math.min(96,p))+'%';}
+    $('#r-m2').textContent=d.eur_m2?eur(d.eur_m2)+'/m²':'—';
+    $('#r-zona').textContent=d.eur_m2_zona?eur(d.eur_m2_zona)+'/m²':'—';
+    $('#r-sup').textContent=[d.superficie_m2?d.superficie_m2+' m²':null,d.uso].filter(Boolean).join(' · ')||'—';
+    $('#r-anio').textContent=[d.anio_construccion,d.confianza?('confianza '+d.confianza):null].filter(Boolean).join(' · ')||'—';
+    const c=$('#r-cierre');
+    if(d.cierre_estimado&&d.cierre_estimado<d.valor_central){
+      c.hidden=false;
+      c.innerHTML=`Precio de <strong>cierre</strong> estimado: <strong>${eur(d.cierre_estimado)}</strong>. Es lo que se suele firmar en tu provincia tras negociar sobre el precio de anuncio.`;
+    } else c.hidden=true;
+    $('#p-fecha').textContent=new Date().toLocaleDateString('es-ES');
+    $('#p-rc').textContent='Referencia catastral '+lastRC+(d.testigos?` · ${d.testigos} inmuebles comparables`:'');
+    $('#lf').hidden=!EMAIL;
+    res.style.display='block';
+    res.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  $('#pdf').addEventListener('click',()=>{ if(window.gtag) gtag('event','informe_pdf'); window.print(); });
+  $('#otra').addEventListener('click',()=>{ res.style.display='none'; rc.value=''; upd(); rc.focus(); });
+
+  $('#lf').addEventListener('submit',async ev=>{
+    ev.preventDefault(); const f=ev.target, e=$('#lf-e'); e.textContent='';
+    const body={email:f.email.value,perfil:f.perfil.value,motivo:f.motivo.value,ok:f.ok.checked,rc:lastRC};
+    const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(r.ok){f.innerHTML='<strong>✓ Listo. Te lo hemos enviado a tu email.</strong>'; if(window.gtag) gtag('event','generate_lead',{perfil:body.perfil,motivo:body.motivo});}
+    else e.textContent=d.error||'No se pudo enviar.';
+  });
+})();
+</script>

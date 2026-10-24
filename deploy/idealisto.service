@@ -1,0 +1,14 @@
+[Unit]
+Description=Idealisto (tasador por referencia catastral) en :3201
+After=network.target
+
+[Service]
+User=orenes
+WorkingDirectory=/home/orenes/idealisto
+EnvironmentFile=/home/orenes/idealisto/.env
+ExecStart=/home/orenes/idealisto/.venv/bin/uvicorn app.idealisto:app --host 127.0.0.1 --port 3201 --workers 2 --proxy-headers
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
