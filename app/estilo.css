@@ -112,3 +112,11 @@ footer .cols{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
   .print-head{display:block!important;margin-bottom:12px}
 }
 .print-head{display:none}
+/* Móvil: el valorador justo después del titular, antes del bloque de respuesta */
+@media(max-width:900px){
+  .hero{gap:0}
+  .hero>div:first-child{display:contents}
+  .hero .eyebrow{justify-self:start}
+  .hero .tool{order:1;margin:6px 0 22px}
+  .hero .answer,.hero .trust{order:2}
+}
