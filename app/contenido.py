@@ -17,9 +17,10 @@ PAGINAS: dict[str, dict] = {}
 
 # ─── Pilar: referencia catastral ────────────────────────────────────────────
 PAGINAS["referencia-catastral"] = {
-    "title": "Referencia catastral: qué es, dónde encontrarla y cómo leerla | Idealisto",
-    "desc": ("Qué es la referencia catastral, dónde encontrarla (recibo del IBI, escritura, nota simple o "
-             "Sede del Catastro), qué significan sus 20 caracteres y para qué sirve."),
+    "actualizado": "2026-10-24",
+    "title": "Referencia catastral: qué es y cómo encontrarla (2026)",
+    "desc": ("Busca tu referencia catastral por dirección, mira dónde está en el recibo del IBI y qué significan "
+             "sus 20 caracteres. Y valora tu inmueble gratis."),
     "miga": "Referencia catastral",
     "h1": "Referencia catastral: qué es, dónde encontrarla y para qué sirve",
     "respuesta": ("La referencia catastral es el código de 20 caracteres que identifica cada inmueble en el "
@@ -27,11 +28,16 @@ PAGINAS["referencia-catastral"] = {
                   f"también puedes buscarla gratis por dirección en la <a href=\"{SEDE_BUSQUEDA}\" rel=\"noopener\">Sede Electrónica del Catastro</a>. "
                   "Con ella puedes saber cuánto vale el inmueble en Idealisto."),
     "html": f"""
-<h2>Qué es la referencia catastral</h2>
+<h2>Buscar tu referencia catastral por dirección</h2>
+<p>Elige provincia, municipio, calle y número. Verás todos los inmuebles del portal con su referencia catastral, planta, puerta, uso y superficie, y podrás valorar el tuyo con un clic.</p>
+<div class="caja-buscador">__BUSCADOR__</div>
+<p class="hint">Datos de la Dirección General del Catastro. País Vasco y Navarra tienen catastros forales y no aparecen en este buscador.</p>
+
+<h2>¿Qué es la referencia catastral?</h2>
 <p>Es el identificador oficial y obligatorio de cada bien inmueble en España. La asigna la Dirección General del Catastro y es única: no hay dos inmuebles con la misma. Cada piso, local, plaza de garaje o trastero con entidad propia tiene la suya, aunque compartan edificio.</p>
 <p>Fuera del País Vasco y Navarra, que tienen catastros forales con su propio formato, todas las referencias siguen la misma estructura de 20 caracteres.</p>
 
-<h2>Dónde encontrar tu referencia catastral</h2>
+<h2>¿Dónde encuentro mi referencia catastral?</h2>
 <ul>
   <li><strong>Recibo del IBI</strong>: es el sitio más rápido. Aparece en el propio recibo o en la carta de domiciliación.</li>
   <li><strong>Escritura de compraventa</strong>: figura en la descripción de la finca.</li>
@@ -39,7 +45,7 @@ PAGINAS["referencia-catastral"] = {
   <li><strong>Sede Electrónica del Catastro</strong>: puedes <a href="{SEDE_BUSQUEDA}" rel="noopener">buscarla por dirección</a> (provincia, municipio, calle y número) o señalando el inmueble en el mapa, sin identificarte. Si el edificio tiene varios inmuebles, verás la lista y eliges el tuyo por planta y puerta.</li>
 </ul>
 
-<h2>Cómo se lee: qué significan los 20 caracteres</h2>
+<h2>¿Qué significan los 20 caracteres?</h2>
 <div class="scroll"><table>
   <thead><tr><th>Posiciones</th><th>Qué identifican</th><th>Ejemplo (9872023VH5797S0001WX)</th></tr></thead>
   <tbody>
@@ -53,7 +59,7 @@ PAGINAS["referencia-catastral"] = {
 <p>En suelo <strong>rústico</strong> los 14 primeros caracteres siguen otra lógica: código de provincia y municipio, sector, polígono y parcela. Los 6 últimos funcionan igual.</p>
 <p>Los dos caracteres de control salen de un cálculo sobre los anteriores. Por eso Idealisto detecta al instante si te has equivocado al copiar una letra.</p>
 
-<h2>Para qué sirve la referencia catastral</h2>
+<h2>¿Para qué sirve la referencia catastral?</h2>
 <ul>
   <li>Declarar el inmueble en la Renta (imputación de rentas o alquileres).</li>
   <li>Pagar el IBI y la plusvalía municipal.</li>
@@ -86,7 +92,8 @@ PAGINAS["referencia-catastral"] = {
 
 # ─── Pilar: valor de referencia ─────────────────────────────────────────────
 PAGINAS["valor-de-referencia"] = {
-    "title": "Valor de referencia del Catastro: qué es, cómo consultarlo y cómo recurrirlo | Idealisto",
+    "actualizado": "2026-10-24",
+    "title": "Valor de referencia del Catastro 2026: guía y comparación",
     "desc": ("Qué es el valor de referencia del Catastro, en qué impuestos se usa (ITP, Sucesiones y "
              "Donaciones), en qué se diferencia del valor de mercado y qué hacer si es demasiado alto."),
     "miga": "Valor de referencia",
@@ -96,11 +103,11 @@ PAGINAS["valor-de-referencia"] = {
                   "Sucesiones y Donaciones: si declaras un precio inferior, tributas por el valor de referencia. "
                   "Compáralo con el valor de mercado de tu inmueble en Idealisto."),
     "html": """
-<h2>Qué es el valor de referencia</h2>
+<h2>¿Qué es el valor de referencia?</h2>
 <p>Lo introdujo la Ley 11/2021 de medidas de prevención y lucha contra el fraude fiscal, con efectos desde el 1 de enero de 2022. La Dirección General del Catastro lo calcula cada año para cada inmueble a partir de las compraventas reales comunicadas por los notarios, agrupadas por zonas y tipologías, y le aplica un factor de minoración para no superar el valor de mercado.</p>
 <p>Los valores de cada año se publican en otoño del año anterior: los de 2026 se publicaron en octubre de 2025.</p>
 
-<h2>En qué impuestos se usa</h2>
+<h2>¿En qué impuestos se usa?</h2>
 <ul>
   <li><strong>ITP (Transmisiones Patrimoniales Onerosas)</strong>: en la compra de vivienda usada, la base imponible es el mayor entre el precio escriturado y el valor de referencia.</li>
   <li><strong>Impuesto de Sucesiones y Donaciones</strong>: en herencias y donaciones, la base es el mayor entre el valor declarado y el de referencia.</li>
@@ -118,10 +125,10 @@ PAGINAS["valor-de-referencia"] = {
   </tbody>
 </table></div>
 
-<h2>Cómo consultar tu valor de referencia</h2>
+<h2>¿Cómo consulto mi valor de referencia?</h2>
 <p>Se consulta en la <a href="https://www.sedecatastro.gob.es/" rel="noopener">Sede Electrónica del Catastro</a>, en el apartado de valor de referencia, con la referencia catastral y la fecha de la operación. Para obtener un certificado necesitas identificarte con Cl@ve, certificado digital o DNI electrónico.</p>
 
-<h2>Qué hacer si el valor de referencia es más alto que el de mercado</h2>
+<h2>¿Qué hago si el valor de referencia es más alto que el de mercado?</h2>
 <p>Ocurre, sobre todo en inmuebles en mal estado, con cargas o con características que una valoración por zonas no capta. El valor de referencia no se recurre por separado; se impugna a la vez que el impuesto:</p>
 <ol>
   <li>Si ya has presentado la autoliquidación, pide su <strong>rectificación</strong> alegando que el valor de referencia supera el de mercado.</li>
@@ -146,7 +153,8 @@ PAGINAS["valor-de-referencia"] = {
 
 # ─── Landing núcleo: tasación por referencia catastral ──────────────────────
 PAGINAS["tasacion-referencia-catastral"] = {
-    "title": "Tasación por referencia catastral gratis: valora tu piso en segundos | Idealisto",
+    "actualizado": "2026-10-24",
+    "title": "Tasación por referencia catastral gratis y sin email",
     "desc": ("Valora gratis un piso, casa, garaje o trastero con solo su referencia catastral: valor de "
              "mercado con rango, €/m², media de la zona y precio de cierre. Sin formularios ni email."),
     "miga": "Tasación por referencia catastral",
@@ -156,10 +164,10 @@ PAGINAS["tasacion-referencia-catastral"] = {
                   "similares en venta a su alrededor y te damos su valor de mercado con un rango, sin pedirte "
                   "nada más."),
     "html": """
-<h2>Por qué solo con la referencia catastral</h2>
+<h2>¿Se puede tasar un piso solo con la referencia catastral?</h2>
 <p>Los valoradores habituales te piden metros, habitaciones, baños, estado, planta y tu email antes de enseñarte nada. Casi todo eso ya está en el Catastro: con la referencia sabemos la superficie construida y su desglose (vivienda, garaje, trastero, zonas comunes), el uso, el año de construcción, la planta y la ubicación exacta de la parcela.</p>
 
-<h2>Qué obtienes</h2>
+<h2>¿Qué obtienes?</h2>
 <ul>
   <li><strong>Valor de mercado estimado</strong> con un rango mínimo y máximo.</li>
   <li><strong>Precio por m²</strong> del inmueble y <strong>media de la zona</strong>.</li>
@@ -168,10 +176,10 @@ PAGINAS["tasacion-referencia-catastral"] = {
   <li>Un <strong>informe en PDF</strong> que puedes descargar al momento.</li>
 </ul>
 
-<h2>Valoración, no tasación oficial</h2>
+<h2>¿Es una tasación oficial?</h2>
 <p>Una tasación oficial (Orden ECO/805/2003) la firma un técnico de una sociedad de tasación homologada por el Banco de España, tras visitar el inmueble, y es la que exige el banco para una hipoteca. La de Idealisto es una valoración automática orientativa: sirve para saber en qué rango te mueves antes de vender, comprar, heredar, repartir o pujar en una subasta, sin pagar ni visitar nada.</p>
 
-<h2>Cuándo es especialmente útil</h2>
+<h2>¿Cuándo es especialmente útil?</h2>
 <ul>
   <li><strong>Herencias y donaciones</strong>: para comparar el valor de mercado con el <a href="/valor-de-referencia/">valor de referencia</a> que usa Hacienda.</li>
   <li><strong>Divorcios y repartos</strong>: una cifra neutral de partida.</li>
@@ -192,7 +200,8 @@ PAGINAS["tasacion-referencia-catastral"] = {
 
 # ─── Metodología ────────────────────────────────────────────────────────────
 PAGINAS["metodologia"] = {
-    "title": "Metodología: cómo calcula Idealisto el valor de un inmueble",
+    "actualizado": "2026-10-24",
+    "title": "Metodología de valoración | Idealisto",
     "desc": ("Fuentes, método de comparación, homogeneización, rango y nivel de confianza de las "
              "valoraciones automáticas de Idealisto."),
     "miga": "Metodología",

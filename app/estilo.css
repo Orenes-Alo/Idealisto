@@ -121,3 +121,25 @@ footer .cols{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
   .hero .answer,.hero .trust{order:2}
 }
 [hidden]{display:none!important}
+/* Buscador de RC por dirección */
+.b-det{margin-top:10px;background:transparent;border:0;padding:0}
+.b-det>summary{font-size:.9rem;color:var(--brand-2);font-weight:600}
+.b-det>summary::after{content:""}
+.b-det[open]{border-top:1px dashed var(--line);padding-top:12px}
+.caja-buscador{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.b-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.b-grid label{font-size:.82rem;font-weight:600;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.b-grid .b-ancha{grid-column:span 2}
+.b-grid select,.b-grid input{font:inherit;font-size:.95rem;padding:10px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);min-width:0}
+.b-grid input:disabled,.b-grid select:disabled{background:var(--bg)}
+.b-sug{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;max-height:240px;overflow:auto;margin-bottom:10px;background:#fff}
+.b-sug button{appearance:none;border:0;border-bottom:1px solid var(--line);background:#fff;text-align:left;padding:9px 12px;font:inherit;font-size:.92rem;cursor:pointer}
+.b-sug button:hover{background:#e3efe9}
+.b-sug small{color:var(--muted)}
+.b-tabla{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:6px}
+.b-tabla th,.b-tabla td{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.b-tabla th{background:var(--bg);color:var(--muted);font-weight:600}
+.b-tabla .btn{padding:7px 12px;font-size:.85rem;text-decoration:none;display:inline-block}
+.mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.03em;font-size:.82rem}
+.fecha{font-size:.85rem;color:var(--muted);margin:-6px 0 14px}
+@media(max-width:520px){.b-grid{grid-template-columns:1fr 1fr}.b-tabla .mono{font-size:.72rem}}

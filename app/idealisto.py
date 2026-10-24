@@ -39,6 +39,7 @@ from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse, PlainTe
                                RedirectResponse, Response)
 
 from . import contenido
+from .callejero import NOMBRES_PROV, PROVINCIAS, Callejero, CallejeroError, norm
 from .rc import normalizar_rc, validar_rc
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -149,6 +150,8 @@ def _db():
 
 
 _CON = _db()
+CALLEJERO = Callejero([u.replace("/internal/avm/rc", "/internal/catastro/callejero") for u in AVM_URLS],
+                      AVM_TOKEN, DB_PATH)
 
 
 def _log_valoracion(rc: str, data: dict | None, ok: bool, error: str | None = None):
@@ -304,6 +307,8 @@ HEAD = r"""<!doctype html>
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icono-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -334,6 +339,7 @@ FOOT = r"""
     <div><a href="/metodologia/">Metodología</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
   </div>
 </footer>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body>
 </html>"""
 
@@ -375,15 +381,25 @@ def render_home() -> str:
         for i, (q, a) in enumerate(FAQ))
     cuerpo = (HOME.replace("__HOWTO__", howto).replace("__FAQ__", faq)
               .replace("__SEDE__", SEDE_BUSQUEDA)
+              .replace("__BUSCADOR__", buscador("home"))
               .replace("__EMAIL_ACTIVO__", "true" if EMAIL_ACTIVO else "false")
               .replace("__BRAND__", escape(BRAND)))
     return pagina(
-        "/", "¿Cuánto vale tu casa? Valoración gratis con la referencia catastral | Idealisto",
+        "/", "¿Cuánto vale tu casa? Valoración gratis con ref. catastral",
         ("Valora gratis tu piso, casa, garaje o trastero con solo la referencia catastral. Valor de "
          "mercado con rango, €/m² y comparación con tu zona en segundos. Sin email."),
         cuerpo, json_ld_home(),
         og_title="¿Cuánto vale tu casa? Descúbrelo con la referencia catastral",
         og_desc="20 caracteres, un precio. Valoración gratuita de inmuebles en España.")
+
+
+MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+         "octubre", "noviembre", "diciembre")
+
+
+def _fecha_es(iso: str) -> str:
+    d = date.fromisoformat(iso)
+    return f"{d.day} de {MESES[d.month - 1]} de {d.year}"
 
 
 def render_secundaria(slug: str) -> str:
@@ -392,6 +408,11 @@ def render_secundaria(slug: str) -> str:
     graph = [_org(), {"@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE_URL + "/"},
         {"@type": "ListItem", "position": 2, "name": p["miga"], "item": SITE_URL + path}]}]
+    if p.get("actualizado"):
+        graph.append({"@type": "Article", "headline": p["h1"], "description": p["desc"],
+                      "inLanguage": "es-ES", "dateModified": p["actualizado"],
+                      "mainEntityOfPage": SITE_URL + path, "image": f"{SITE_URL}/og.png",
+                      "author": {"@id": f"{SITE_URL}/#org"}, "publisher": {"@id": f"{SITE_URL}/#org"}})
     if p.get("faq"):
         graph.append({"@type": "FAQPage", "mainEntity": [
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
@@ -410,9 +431,16 @@ def render_secundaria(slug: str) -> str:
         '<a class="btn" href="/#valorar">Valorar gratis</a></div>')
     cuerpo = (f'<main class="wrap doc"><p class="crumbs"><a href="/">Inicio</a> › {escape(p["miga"])}</p>'
               f'<h1>{escape(p["h1"])}</h1>'
+              + (f'<p class="fecha">Actualizado el {_fecha_es(p["actualizado"])}</p>' if p.get("actualizado") else "")
               + (f'<p class="answer"><strong>Respuesta rápida:</strong> {p["respuesta"]}</p>' if p.get("respuesta") else "")
-              + p["html"] + cta + faq + "</main>")
+              + p["html"].replace("__BUSCADOR__", buscador("enlace")) + cta + faq + "</main>")
     return pagina(path, p["title"], p["desc"], cuerpo, _ld(graph))
+
+
+def buscador(modo: str) -> str:
+    provs = json.dumps(PROVINCIAS, ensure_ascii=False).replace("</", "<\\/")
+    return (f'<script type="application/json" id="provincias-json">{provs}</script>'
+            f'<div class="buscador" data-modo="{modo}"></div><script src="/buscador.js?v=1" defer></script>')
 
 
 SECUNDARIAS = {slug: render_secundaria(slug) for slug in contenido.PAGINAS}
@@ -552,6 +580,42 @@ async def api_lead(request: Request):
     return {"ok": True}
 
 
+# ── Buscador de RC por dirección ────────────────────────────────────────────
+def _callejero(fn):
+    try:
+        return JSONResponse(fn(), headers={"Cache-Control": "public, max-age=3600"})
+    except CallejeroError:
+        return JSONResponse({"error": "No hemos podido consultar el Catastro. Inténtalo en un momento."}, 503)
+
+
+@app.get("/api/catastro/municipios")
+def api_municipios(request: Request, prov: str = "", q: str = ""):
+    if _limitado("cj:" + _ip(request), 300):
+        return JSONResponse({"error": "Demasiadas búsquedas seguidas. Prueba en un rato."}, 429)
+    if prov not in NOMBRES_PROV or len(norm(q)) < 2:
+        return JSONResponse({"error": "Elige provincia y escribe al menos 2 letras."}, 422)
+    return _callejero(lambda: {"municipios": CALLEJERO.municipios(prov, q)})
+
+
+@app.get("/api/catastro/calles")
+def api_calles(request: Request, prov: str = "", mun: str = "", q: str = ""):
+    if _limitado("cj:" + _ip(request), 300):
+        return JSONResponse({"error": "Demasiadas búsquedas seguidas. Prueba en un rato."}, 429)
+    if prov not in NOMBRES_PROV or not mun or len(norm(q)) < 3:
+        return JSONResponse({"error": "Escribe al menos 3 letras de la calle."}, 422)
+    return _callejero(lambda: {"calles": CALLEJERO.calles(prov, norm(mun), q)})
+
+
+@app.get("/api/catastro/inmuebles")
+def api_inmuebles(request: Request, prov: str = "", mun: str = "", tv: str = "", calle: str = "", num: str = ""):
+    if _limitado("cj:" + _ip(request), 300):
+        return JSONResponse({"error": "Demasiadas búsquedas seguidas. Prueba en un rato."}, 429)
+    if prov not in NOMBRES_PROV or not mun or not calle or not re.fullmatch(r"\d{1,5}", num.strip()) \
+            or not re.fullmatch(r"[A-Z]{1,3}", tv.strip()):
+        return JSONResponse({"error": "Completa municipio, calle y número."}, 422)
+    return _callejero(lambda: CALLEJERO.inmuebles(prov, norm(mun), tv.strip(), norm(calle), num.strip()))
+
+
 # ── Páginas secundarias ─────────────────────────────────────────────────────
 @app.get("/{slug}/", response_class=HTMLResponse)
 def secundaria(slug: str):
@@ -631,7 +695,10 @@ def llms():
 """
 
 
-ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "og.png": "image/png"}
+ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "og.png": "image/png",
+             "buscador.js": "application/javascript", "sw.js": "application/javascript",
+             "manifest.webmanifest": "application/manifest+json",
+             "icono-192.png": "image/png", "icono-512.png": "image/png"}
 
 
 @app.get("/{nombre}")
