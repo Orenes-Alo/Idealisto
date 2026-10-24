@@ -120,3 +120,4 @@ footer .cols{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
   .hero .tool{order:1;margin:6px 0 22px}
   .hero .answer,.hero .trust{order:2}
 }
+[hidden]{display:none!important}
