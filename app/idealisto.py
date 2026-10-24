@@ -118,7 +118,16 @@ def para_publico(d: dict) -> dict:
                                  "superficie_m2", "anio_construccion", "direccion", "confianza",
                                  "cierre_estimado", "testigos", "radio_km")}
     out["uso"] = _uso(d.get("uso"))
+    # El backend añadía ", MUNICIPIO" a una dirección del Catastro que ya lo lleva.
+    dire, muni = out.get("direccion") or "", d.get("municipio") or ""
+    if muni and dire.endswith(", " + muni) and dire.count(muni) > 1:
+        out["direccion"] = dire[: -len(", " + muni)]
     return out
+
+
+# Locales y naves se valoran con otros métodos (rentas, reposición): fuera de la
+# herramienta pública, como dicen la metodología y la FAQ.
+FUERA_DE_ALCANCE = {"local", "nave"}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -468,6 +477,13 @@ async def api_valorar(request: Request):
         if e.status == 429:
             return JSONResponse({"error": "Mucha gente valorando a la vez. Prueba en un minuto."}, 503)
         return JSONResponse({"error": "El servicio de valoración no está disponible ahora mismo."}, 503)
+    if data.get("tipo_amplio") in FUERA_DE_ALCANCE:
+        _log_valoracion(rc, data, False, "fuera_de_alcance")
+        ficha = {k: v for k, v in para_publico(data).items()
+                 if k in ("direccion", "uso", "superficie_m2", "anio_construccion") and v is not None}
+        return JSONResponse({"error": ("De momento la herramienta pública valora viviendas, garajes y trasteros. "
+                                       f"Para locales y naves, escríbenos a {CONTACT_EMAIL} y lo estudiamos."),
+                             "codigo": "fuera_de_alcance", "ficha": ficha}, 422)
     _log_valoracion(rc, data, True)
     return JSONResponse(para_publico(data), headers={"Cache-Control": "no-store"})
 
