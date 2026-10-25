@@ -8,7 +8,7 @@ RAZON = "Orenes &amp; Asociados Abogados-Consultoría Legal, S.L.P."
 NIF = "B05560313"
 DOM = "Avenida de la Libertad 5, 1.º A, 30009 Murcia (España)"
 EMAIL = "alonso.orenes@onmi.es"
-FECHA_LEGAL = "24 de octubre de 2026"
+FECHA_LEGAL = "25 de octubre de 2026"
 SEDE = "https://www.sedecatastro.gob.es/"
 SEDE_BUSQUEDA = "https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCBusqueda.aspx"
 MAIL = f'<a href="mailto:{EMAIL}">{EMAIL}</a>'
@@ -154,18 +154,18 @@ PAGINAS["valor-de-referencia"] = {
 # ─── Landing núcleo: tasación por referencia catastral ──────────────────────
 PAGINAS["tasacion-referencia-catastral"] = {
     "actualizado": "2026-10-24",
-    "title": "Tasación por referencia catastral gratis y sin email",
+    "title": "Tasación por referencia catastral gratis: motor de testigos",
     "desc": ("Valora gratis un piso, casa, garaje o trastero con solo su referencia catastral: valor de "
-             "mercado con rango, €/m², media de la zona y precio de cierre. Sin formularios ni email."),
+             "mercado con rango, €/m², media de la zona y precio de cierre. Informe completo por 4,70 € + IVA."),
     "miga": "Tasación por referencia catastral",
-    "h1": "Tasación por referencia catastral: gratis, en segundos y sin formularios",
+    "h1": "Tasación por referencia catastral: gratis, en segundos y sin preguntas",
     "respuesta": ("Para valorar un inmueble con su referencia catastral, pega los 20 caracteres en Idealisto. "
                   "Obtenemos del Catastro su superficie, uso, año y ubicación, lo comparamos con los inmuebles "
-                  "similares en venta a su alrededor y te damos su valor de mercado con un rango, sin pedirte "
+                  "similares en venta a su alrededor y te damos su valor de mercado con un rango, sin preguntarte metros "
                   "nada más."),
     "html": """
 <h2>¿Se puede tasar un piso solo con la referencia catastral?</h2>
-<p>Los valoradores habituales te piden metros, habitaciones, baños, estado, planta y tu email antes de enseñarte nada. Casi todo eso ya está en el Catastro: con la referencia sabemos la superficie construida y su desglose (vivienda, garaje, trastero, zonas comunes), el uso, el año de construcción, la planta y la ubicación exacta de la parcela.</p>
+<p>Los valoradores habituales te piden metros, habitaciones, baños, estado y planta antes de enseñarte nada. Casi todo eso ya está en el Catastro: con la referencia sabemos la superficie construida y su desglose (vivienda, garaje, trastero, zonas comunes), el uso, el año de construcción, la planta y la ubicación exacta de la parcela.</p>
 
 <h2>¿Qué obtienes?</h2>
 <ul>
@@ -173,7 +173,7 @@ PAGINAS["tasacion-referencia-catastral"] = {
   <li><strong>Precio por m²</strong> del inmueble y <strong>media de la zona</strong>.</li>
   <li><strong>Precio de cierre estimado</strong>: lo que se suele firmar tras negociar, que no es lo mismo que el precio de anuncio.</li>
   <li><strong>Nivel de confianza</strong>: alto, medio o bajo según cuántos comparables hay y cómo de parecidos son.</li>
-  <li>Un <strong>informe en PDF</strong> que puedes descargar al momento.</li>
+  <li>Si lo necesitas, el <strong>informe completo en Word</strong> (4,70 € + IVA) con los testigos usados uno a uno, el mercado oficial de tu provincia y el entorno del inmueble.</li>
 </ul>
 
 <h2>¿Es una tasación oficial?</h2>
@@ -188,7 +188,7 @@ PAGINAS["tasacion-referencia-catastral"] = {
 </ul>
 """,
     "faq": [
-        ("¿Es gratis?", "Sí. La valoración es gratuita y no te pedimos ningún dato personal para verla."),
+        ("¿Es gratis?", "Sí. La valoración es gratuita con una cuenta (nombre, email y teléfono, sin contraseñas). El informe completo en Word cuesta 4,70 € + IVA."),
         ("¿Qué fiabilidad tiene?",
          "Depende de cuántos inmuebles comparables haya cerca. Por eso mostramos un rango y un nivel de "
          "confianza en cada valoración. En zonas con poca oferta, preferimos no dar cifra a dar una mala."),
@@ -279,6 +279,10 @@ PAGINAS["aviso-legal"] = {
 <h2>Naturaleza de las valoraciones</h2>
 <p>Las valoraciones son estimaciones automáticas y orientativas, calculadas con datos públicos del Catastro y con inmuebles comparables en venta. No constituyen una tasación oficial conforme a la Orden ECO/805/2003, no tienen validez para fines hipotecarios, judiciales ni fiscales y no sustituyen el asesoramiento de un profesional. El titular no garantiza su exactitud y no responde de las decisiones que el usuario tome basándose en ellas.</p>
 <p>Los contenidos informativos sobre impuestos y procedimientos son generales y pueden no ajustarse a tu caso concreto o a la normativa de tu comunidad autónoma.</p>
+<h2>Cuenta y precio</h2>
+<p>La valoración en pantalla es gratuita y requiere una cuenta (nombre, email y teléfono), que se confirma con un enlace enviado al email. El informe completo en formato Word cuesta <strong>4,70 € más el 21 % de IVA (5,69 € en total)</strong> por informe, pago único con tarjeta a través de Stripe.</p>
+<h2>Entrega del informe y desistimiento</h2>
+<p>El informe es contenido digital que se genera y entrega de inmediato tras el pago, y queda disponible para descarga en «Mis informes». Antes de pagar, el usuario consiente expresamente la entrega inmediata y reconoce que, con ella, pierde el derecho de desistimiento (art. 103.m del texto refundido de la Ley General para la Defensa de los Consumidores y Usuarios). Si el informe no se genera por un fallo técnico, se reintenta automáticamente y, si no es posible, se devuelve el importe. Para pedir factura, escribe a {MAIL} con tus datos fiscales.</p>
 <h2>Uso del servicio</h2>
 <p>Queda prohibido el uso automatizado de la herramienta (consultas masivas, extracción de datos o reventa de resultados) sin autorización previa por escrito. El servicio aplica límites de uso por motivos técnicos.</p>
 <h2>Propiedad intelectual</h2>
@@ -290,28 +294,34 @@ PAGINAS["aviso-legal"] = {
 
 PAGINAS["privacidad"] = {
     "title": "Política de privacidad | Idealisto",
-    "desc": "Cómo trata Idealisto tus datos: valoración sin datos personales, email solo si pides el informe, sin cesión a inmobiliarias.",
+    "desc": "Cómo trata Idealisto tus datos: cuenta, valoraciones, informes de pago y comunicaciones de InversionNPL. Sin cesión a inmobiliarias.",
     "miga": "Privacidad",
     "h1": "Política de privacidad",
     "sin_cta": True,
     "html": f"""
 <p><em>Última actualización: {FECHA_LEGAL}</em></p>
 <h2>Responsable del tratamiento</h2>
-<p>{RAZON}, NIF {NIF}, {DOM}. Contacto: {MAIL}.</p>
-<h2>Valorar sin datos personales</h2>
-<p>Para valorar un inmueble solo necesitas su referencia catastral. No te pedimos nombre, email ni teléfono. La referencia catastral no se guarda en claro: registramos únicamente un resumen técnico irreversible (hash), el tipo de inmueble, la provincia y la cifra obtenida, con fines estadísticos y de mejora del servicio.</p>
-<p>Por seguridad, y para aplicar los límites de uso, tratamos tu dirección IP de forma transitoria (en memoria, durante como máximo una hora) y en los registros técnicos del servidor.</p>
-<h2>Si nos pides el informe por email</h2>
-<ul>
-  <li><strong>Datos</strong>: email, la referencia catastral del inmueble valorado y, si los indicas, tu perfil y el motivo de la consulta.</li>
-  <li><strong>Finalidad</strong>: enviarte el informe que has pedido.</li>
-  <li><strong>Base jurídica</strong>: tu consentimiento (art. 6.1.a RGPD), que puedes retirar en cualquier momento.</li>
-  <li><strong>Conservación</strong>: hasta que retires el consentimiento y, como máximo, 24 meses.</li>
-  <li><strong>Destinatarios</strong>: no cedemos tus datos a inmobiliarias ni a terceros. Los encargados técnicos (alojamiento del servidor y envío de email) solo los tratan por cuenta nuestra.</li>
-</ul>
-<h2>Analítica</h2>
-<p>Si activamos analítica web, será con IP anonimizada y la indicaremos aquí junto con el aviso de cookies correspondiente.</p>
+<p>{RAZON}, NIF {NIF}, {DOM}. Contacto: {MAIL}. La misma sociedad es titular de InversionNPL (inversionnpl.com).</p>
+
+<h2>Qué datos tratamos y para qué</h2>
+<div class="scroll"><table>
+  <thead><tr><th>Datos</th><th>Finalidad</th><th>Base jurídica</th><th>Conservación</th></tr></thead>
+  <tbody>
+    <tr><td>Nombre, email y teléfono de tu cuenta</td><td>Crear tu cuenta, enviarte los enlaces de acceso y prestarte el servicio de valoración.</td><td>Ejecución del servicio que solicitas (art. 6.1.b RGPD).</td><td>Mientras tengas la cuenta y, después, el plazo de prescripción de acciones.</td></tr>
+    <tr><td>Referencias catastrales que valoras y sus resultados</td><td>Mostrarte la valoración, guardarla en tu cuenta y generar el informe si lo compras.</td><td>Ejecución del servicio (art. 6.1.b RGPD).</td><td>Mientras tengas la cuenta.</td></tr>
+    <tr><td>Nombre, email y teléfono</td><td>Enviarte información sobre InversionNPL, la plataforma de inversión inmobiliaria del mismo titular, y, si lo deseas, que su equipo te contacte.</td><td>Interés legítimo del responsable en dar a conocer servicios propios relacionados con el inmobiliario (art. 6.1.f RGPD y art. 21.2 LSSI). Puedes oponerte en cualquier momento con el enlace de baja de cada email o escribiéndonos.</td><td>Hasta que te des de baja o te opongas.</td></tr>
+    <tr><td>Datos de la compra del informe</td><td>Cobrar el informe, entregártelo y cumplir obligaciones contables y fiscales.</td><td>Ejecución del contrato y obligación legal (art. 6.1.b y 6.1.c RGPD).</td><td>6 años (Código de Comercio) y lo que exija la normativa fiscal.</td></tr>
+    <tr><td>Dirección IP y registros técnicos</td><td>Seguridad y límites de uso del servicio.</td><td>Interés legítimo en proteger el servicio (art. 6.1.f RGPD).</td><td>En memoria, como máximo una hora; registros del servidor, el tiempo técnico necesario.</td></tr>
+  </tbody>
+</table></div>
+
+<h2>A quién se comunican</h2>
+<p><strong>No cedemos tus datos a inmobiliarias ni a terceros para sus propios fines.</strong> Los datos se comparten dentro del mismo responsable entre Idealisto e InversionNPL. Los tratan, por nuestra cuenta y con contrato de encargo, el proveedor de alojamiento del servidor, el de envío de emails (Resend) y el de pagos (Stripe, que recibe los datos de tu tarjeta directamente; nosotros no los vemos). Algunos de estos proveedores pueden tratar datos fuera del Espacio Económico Europeo con las garantías del RGPD (cláusulas contractuales tipo o decisiones de adecuación).</p>
+
+<h2>Cookies</h2>
+<p>Usamos una única cookie técnica para mantener tu sesión iniciada, necesaria para el servicio. Si activamos analítica web, será con IP anonimizada y la indicaremos aquí junto con el aviso de cookies correspondiente.</p>
+
 <h2>Tus derechos</h2>
-<p>Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a {MAIL}. Si consideras que no hemos atendido bien tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>).</p>
+<p>Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a {MAIL}. Para dejar de recibir información de InversionNPL basta con el enlace de baja de cualquier email. Si consideras que no hemos atendido bien tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>).</p>
 """,
 }

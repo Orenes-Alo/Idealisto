@@ -39,6 +39,9 @@ from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse, PlainTe
                                RedirectResponse, Response)
 
 from . import calculadoras, contenido, fiscal
+from . import orenes
+from .cuentas import COOKIE, SESION_DIAS, Cuentas, normalizar_telefono
+from .informes import Informes
 from .callejero import NOMBRES_PROV, PROVINCIAS, Callejero, CallejeroError, norm
 from .rc import normalizar_rc, validar_rc
 from .zonas import Zonas
@@ -59,9 +62,6 @@ DB_PATH = os.getenv("DB_PATH", str(RAIZ / "data" / "idealisto.sqlite3"))
 GA4_ID = os.getenv("GA4_ID", "")
 RATE_LIMIT = int(os.getenv("RATE_LIMIT", "20"))            # valoraciones por IP y hora
 SAME_AS = [u for u in os.getenv("SAME_AS", "").split(",") if u]
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-RESEND_FROM = os.getenv("RESEND_FROM", "")
-EMAIL_ACTIVO = bool(RESEND_API_KEY and RESEND_FROM)
 LAST_MOD = date.today().isoformat()
 SEDE_BUSQUEDA = "https://www1.sedecatastro.gob.es/CYCBienInmueble/OVCBusqueda.aspx"
 
@@ -151,6 +151,8 @@ def _db():
 
 
 _CON = _db()
+CUENTAS = Cuentas(_CON, _db_lock)
+INFORMES = Informes(_CON, _db_lock, RAIZ / "data" / "informes")
 CALLEJERO = Callejero([u.replace("/internal/avm/rc", "/internal/catastro/callejero") for u in AVM_URLS],
                       AVM_TOKEN, DB_PATH)
 
@@ -193,9 +195,17 @@ def _limitado(ip: str, cupo: int = RATE_LIMIT) -> bool:
 # ─────────────────────────────────────────────────────────────────────────────
 FAQ = [
     ("¿Cuánto vale mi casa?",
-     f"Introduce la referencia catastral de tu vivienda en {BRAND} y en segundos verás su valor de "
-     "mercado estimado (con un rango mínimo y máximo), el precio por metro cuadrado y la comparación "
-     "con la media de tu zona. No te pedimos metros, habitaciones ni email."),
+     f"Introduce la referencia catastral de tu vivienda en {BRAND} y, con tu cuenta gratuita, verás en "
+     "segundos su valor de mercado estimado (con un rango mínimo y máximo), el precio por metro cuadrado, "
+     "la comparación con la media de tu zona y el precio de cierre estimado. No te pedimos metros ni habitaciones."),
+    ("¿La valoración es gratis?",
+     "Sí. Solo necesitas registrarte con tu nombre, email y teléfono; no hay contraseñas. El informe completo "
+     "en Word, con los testigos usados, el mercado oficial de tu provincia y el entorno del inmueble, cuesta "
+     "4,70 € + IVA (5,69 € en total)."),
+    ("¿Qué incluye el informe completo?",
+     "La ficha del inmueble con fachada y ortofoto, la valoración con precio justo, rango y precio de cierre, "
+     "los testigos usados con su precio y distancia, el alquiler de referencia y la rentabilidad, el mercado "
+     "oficial de la provincia, el entorno y sus riesgos, el análisis de la zona y la legislación aplicable."),
     ("¿Se puede tasar un piso solo con la referencia catastral?",
      "Sí. La referencia catastral identifica de forma única cada inmueble en España. A partir de ella "
      "obtenemos del Catastro la superficie, el uso, el año de construcción y la ubicación exacta, y los "
@@ -221,8 +231,9 @@ FAQ = [
      "Sí. Copia la referencia catastral que aparece en el edicto de la subasta y obtendrás el valor de "
      "mercado estimado para calcular cuánto descuento ofrece la puja."),
     ("¿Vendéis mis datos a inmobiliarias?",
-     "No. Puedes valorar sin dejar ningún dato personal y no cedemos datos a agencias ni a terceros. "
-     "Ni siquiera guardamos la referencia catastral que consultas."),
+     "No. No cedemos tus datos a agencias ni a terceros. Idealisto es un servicio de Orenes & Asociados, "
+     "titular también de InversionNPL, y al registrarte te enviaremos información sobre esa plataforma de "
+     "inversión; puedes darte de baja en cualquier email."),
     ("¿Funciona en el País Vasco y Navarra?",
      "Estos territorios tienen catastros forales propios con otro formato de referencia. De momento "
      "valoramos inmuebles del Catastro estatal (resto de España)."),
@@ -230,9 +241,9 @@ FAQ = [
 
 HOWTO = [
     ("Busca tu referencia catastral",
-     "Mira el recibo del IBI, la escritura o la nota simple. Son 20 caracteres alfanuméricos."),
-    ("Pégala en el valorador",
-     "Da igual si la escribes con espacios o guiones: la normalizamos y comprobamos que es válida."),
+     "Mira el recibo del IBI, la escritura o la nota simple, o búscala por dirección. Son 20 caracteres."),
+    ("Pégala en el valorador y crea tu cuenta",
+     "Registro gratuito con nombre, email y teléfono; confirmas el email con un enlace, sin contraseñas."),
     ("Recibe el valor al instante",
      "Valor de mercado con rango, €/m², comparación con tu zona y precio de cierre estimado."),
 ]
@@ -326,6 +337,7 @@ __GA4__
       <a href="/referencia-catastral/">Referencia catastral</a>
       <a href="/valor-de-referencia/">Valor de referencia</a>
       <a href="/#faq">Preguntas</a>
+      <a href="/#valorar" id="cuenta" class="nav-cuenta">Entrar</a>
     </nav>
   </header>
 </div>
@@ -340,6 +352,15 @@ FOOT = r"""
     <div><a href="/metodologia/">Metodología</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
   </div>
 </footer>
+<script>
+(function(){
+  const a=document.getElementById('cuenta'); if(!a) return;
+  fetch('/api/yo',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+    if(d.usuario){ a.textContent='Mis informes'; a.href='/mis-informes/'; }
+    else a.addEventListener('click',e=>{ if(window.idealistoEntrar){ e.preventDefault(); window.idealistoEntrar(); } });
+  }).catch(()=>{});
+})();
+</script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body>
 </html>"""
@@ -374,7 +395,39 @@ def pagina(path: str, title: str, desc: str, cuerpo: str, jsonld: str,
 HOME = (RAIZ / "app" / "home.html").read_text(encoding="utf-8")
 
 
+def _num(n: int) -> str:
+    return f"{n:,}".replace(",", ".")
+
+
+def render_ejemplos() -> str:
+    """Valoraciones reales anonimizadas (municipio, tipo, m², año; sin dirección ni RC), de data/ejemplos.json."""
+    try:
+        ej = json.loads((RAIZ / "data" / "ejemplos.json").read_text(encoding="utf-8"))
+    except (FileNotFoundError, ValueError):
+        return ""
+    eur = lambda n: f"{n:,.0f} €".replace(",", ".") if n else "—"
+    tarjetas = ""
+    for e in ej.get("ejemplos", []):
+        cierre = f'<div class="ej-fila"><span>Precio de cierre</span><b>{eur(e.get("cierre_estimado"))}</b></div>' if e.get("cierre_estimado") else ""
+        tarjetas += (
+            f'<article class="ejemplo"><div class="ej-tipo">{escape(e["uso"] or "")} · {e["superficie_m2"]} m²'
+            + (f' · {e["anio_construccion"]}' if e.get("anio_construccion") else "") + "</div>"
+            f'<h3>{escape(e["municipio"])}</h3><p class="ej-prov">{escape(e["provincia"])}</p>'
+            f'<div class="ej-valor">{eur(e["valor_central"])}</div>'
+            f'<div class="ej-rango">{eur(e["valor_min"])} – {eur(e["valor_max"])}</div>'
+            f'<div class="ej-fila"><span>€/m²</span><b>{eur(e.get("eur_m2"))}</b></div>{cierre}'
+            f'<div class="ej-fila"><span>Testigos usados</span><b>{e.get("testigos") or "—"}</b></div>'
+            f'<div class="ej-fila"><span>Confianza</span><b>{escape(e.get("confianza") or "—")}</b></div></article>')
+    if not tarjetas:
+        return ""
+    return (f'<section id="ejemplos"><div class="wrap"><span class="eyebrow">Ejemplos reales</span>'
+            f'<h2>Valoraciones hechas con el motor</h2><p class="lead">Inmuebles reales valorados el {escape(ej.get("fecha_txt", ""))}. '
+            'Mostramos municipio, tipo y superficie, sin dirección ni referencia catastral.</p>'
+            f'<div class="ejemplos">{tarjetas}</div></div></section>')
+
+
 def render_home() -> str:
+    ZONAS._cargar()
     howto = "".join(
         f'<div class="card"><div class="step-n">{i + 1}</div><h3>{escape(n)}</h3><p>{escape(t)}</p></div>'
         for i, (n, t) in enumerate(HOWTO))
@@ -384,15 +437,17 @@ def render_home() -> str:
     cuerpo = (HOME.replace("__HOWTO__", howto).replace("__FAQ__", faq)
               .replace("__SEDE__", SEDE_BUSQUEDA)
               .replace("__BUSCADOR__", buscador("home"))
-              .replace("__EMAIL_ACTIVO__", "true" if EMAIL_ACTIVO else "false")
+              .replace("__ANUNCIOS__", _num(sum(p["n"] for p in ZONAS.d.get("provincias", {}).values())))
+              .replace("__MUNICIPIOS__", _num(len(ZONAS.d.get("municipios", {}))))
+              .replace("__EJEMPLOS__", render_ejemplos())
               .replace("__BRAND__", escape(BRAND)))
     return pagina(
         "/", "¿Cuánto vale tu casa? Valoración gratis con ref. catastral",
-        ("Valora gratis tu piso, casa, garaje o trastero con solo la referencia catastral. Valor de "
-         "mercado con rango, €/m² y comparación con tu zona en segundos. Sin email."),
+        ("Valora gratis tu piso, casa, garaje o trastero con su referencia catastral y el motor de testigos: "
+         "valor de mercado con rango, €/m², precio de cierre e informe completo por 4,70 € + IVA."),
         cuerpo, json_ld_home(),
         og_title="¿Cuánto vale tu casa? Descúbrelo con la referencia catastral",
-        og_desc="20 caracteres, un precio. Valoración gratuita de inmuebles en España.")
+        og_desc="20 caracteres, un precio. El motor de testigos de los inversores, para cualquier vivienda.")
 
 
 MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
@@ -429,7 +484,7 @@ def render_secundaria(slug: str) -> str:
             f"<details><summary>{escape(q)}</summary><p>{escape(a)}</p></details>" for q, a in p["faq"])
     cta = "" if p.get("sin_cta") else (
         '<div class="cta-box"><div><strong>¿Cuánto vale tu inmueble?</strong><br>'
-        'Pega su referencia catastral y míralo en segundos, gratis y sin email.</div>'
+        'Pega su referencia catastral y míralo en segundos, gratis con tu cuenta.</div>'
         '<a class="btn" href="/#valorar">Valorar gratis</a></div>')
     cuerpo = (f'<main class="wrap doc"><p class="crumbs"><a href="/">Inicio</a> › {escape(p["miga"])}</p>'
               f'<h1>{escape(p["h1"])}</h1>'
@@ -484,7 +539,7 @@ def render_calc(slug: str | None) -> str:
               f'<p class="answer"><strong>Respuesta rápida:</strong> {escape(c["respuesta"])}</p>'
               f'<div class="caja-calc">{c["form"]}</div>{html_c}'
               '<div class="cta-box"><div><strong>¿Cuánto vale el inmueble?</strong><br>Pega su referencia catastral y míralo en '
-              'segundos, gratis y sin email.</div><a class="btn" href="/#valorar">Valorar gratis</a></div>'
+              'segundos, gratis con tu cuenta.</div><a class="btn" href="/#valorar">Valorar gratis</a></div>'
               f'<h2>Preguntas frecuentes</h2>{faq}<p class="hint">Cálculo orientativo con la normativa vigente a la fecha indicada. '
               'No sustituye el asesoramiento de un profesional.</p></main>'
               f'<script type="application/json" id="fiscal-json">{fiscal_js}</script><script src="/calc.js?v=1" defer></script>')
@@ -535,7 +590,11 @@ def home():
 
 @app.get("/health")
 def health():
-    return {"ok": True, "avm": bool(AVM_TOKEN), "email": EMAIL_ACTIVO}
+    return {"ok": True, "avm": bool(AVM_TOKEN)}
+
+
+def usuario_de(request: Request) -> dict | None:
+    return CUENTAS.por_sesion(request.cookies.get(COOKIE))
 
 
 _MENSAJES = {
@@ -549,7 +608,10 @@ _MENSAJES = {
 
 @app.post("/api/valorar")
 async def api_valorar(request: Request):
-    if _limitado(_ip(request)):
+    u = usuario_de(request)
+    if not u:
+        return JSONResponse({"error": "Regístrate gratis para ver la valoración.", "codigo": "registro"}, 401)
+    if _limitado(_ip(request)) or _limitado("u:" + u["id"], 60):
         return JSONResponse({"error": "Has hecho muchas valoraciones seguidas. Prueba en un rato."}, 429)
     try:
         body = await request.json()
@@ -579,71 +641,207 @@ async def api_valorar(request: Request):
                                        f"Para locales y naves, escríbenos a {CONTACT_EMAIL} y lo estudiamos."),
                              "codigo": "fuera_de_alcance", "ficha": ficha}, 422)
     _log_valoracion(rc, data, True)
-    return JSONResponse(para_publico(data), headers={"Cache-Control": "no-store"})
+    vid = INFORMES.guardar_valoracion(u["id"], rc, json.dumps(data, ensure_ascii=False))
+    threading.Thread(target=_actividad, args=(u["email"],), daemon=True).start()
+    return JSONResponse({**para_publico(data), "vid": vid}, headers={"Cache-Control": "no-store"})
+
+
+def _actividad(email: str):
+    try:
+        orenes.llamar("POST", "/internal/idealisto/actividad", {"email": email, "tipo": "valoracion"}, timeout=10)
+    except orenes.OrenesError:
+        pass
 
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$")
 
 
-def _enviar_informe(email: str, rc: str, d: dict) -> bool:
-    eur = lambda n: f"{n:,.0f} €".replace(",", ".") if n else "—"
-    filas = [("Valor de mercado estimado", eur(d.get("valor_central"))),
-             ("Rango", f"{eur(d.get('valor_min'))} – {eur(d.get('valor_max'))}"),
-             ("Precio de cierre estimado", eur(d.get("cierre_estimado"))),
-             ("Precio por m²", eur(d.get("eur_m2")) + "/m²" if d.get("eur_m2") else "—"),
-             ("Media de la zona", eur(d.get("eur_m2_zona")) + "/m²" if d.get("eur_m2_zona") else "—"),
-             ("Superficie", f"{d['superficie_m2']} m²" if d.get("superficie_m2") else "—"),
-             ("Uso", d.get("uso") or "—"), ("Año", str(d.get("anio_construccion") or "—"))]
-    tabla = "".join(f"<tr><td style='padding:6px 12px;color:#5a6b69'>{escape(k)}</td>"
-                    f"<td style='padding:6px 12px'><b>{escape(v)}</b></td></tr>" for k, v in filas)
-    html = (f"<div style='font-family:Arial,sans-serif;max-width:560px'><h2 style='color:#0f3d3e'>Tu valoración en {BRAND}</h2>"
-            f"<p>{escape(d.get('direccion') or '')}<br><small>Ref. catastral {escape(rc)}</small></p>"
-            f"<table style='border-collapse:collapse'>{tabla}</table>"
-            f"<p style='font-size:12px;color:#5a6b69'>Valoración automática orientativa a {date.today():%d/%m/%Y}. "
-            f"No es una tasación oficial (Orden ECO/805/2003). <a href='{SITE_URL}/metodologia/'>Cómo calculamos</a>.</p></div>")
-    req = urllib.request.Request(
-        "https://api.resend.com/emails", method="POST",
-        data=json.dumps({"from": RESEND_FROM, "to": [email], "subject": f"Tu valoración en {BRAND}",
-                         "html": html}).encode(),
-        headers={"Authorization": f"Bearer {RESEND_API_KEY}", "Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(req, timeout=20):
-            return True
-    except Exception:
-        return False
+def _destino_seguro(d: str) -> str:
+    d = str(d or "/")
+    return d if d.startswith("/") and not d.startswith("//") else "/"
 
 
-@app.post("/api/lead")
-async def api_lead(request: Request):
-    if not EMAIL_ACTIVO:
-        return JSONResponse({"error": "El envío por email aún no está disponible."}, 404)
-    if _limitado("lead:" + _ip(request), 5):
-        return JSONResponse({"error": "Demasiadas peticiones."}, 429)
+# ── Cuentas: registro y acceso por enlace ──────────────────────────────────
+@app.post("/api/registro")
+async def api_registro(request: Request):
+    if _limitado("reg:" + _ip(request), 6):
+        return JSONResponse({"error": "Demasiados intentos. Prueba dentro de un rato."}, 429)
     try:
         b = await request.json()
     except Exception:
         return JSONResponse({"error": "Petición no válida."}, 400)
-    email = str(b.get("email", "")).strip()[:200]
+    nombre = " ".join(str(b.get("nombre", "")).split())[:120]
+    email = str(b.get("email", "")).strip().lower()[:200]
+    telefono = normalizar_telefono(str(b.get("telefono", "")))
+    if len(nombre) < 2:
+        return JSONResponse({"error": "Escribe tu nombre."}, 422)
     if not _EMAIL_RE.match(email):
         return JSONResponse({"error": "Revisa el email."}, 422)
-    if not b.get("ok"):
-        return JSONResponse({"error": "Necesitamos tu consentimiento para enviarte el informe."}, 422)
-    rc = normalizar_rc(str(b.get("rc", "")))[:20]
-    if not validar_rc(rc)[0]:
-        return JSONResponse({"error": "Valora primero un inmueble."}, 422)
+    if not telefono:
+        return JSONResponse({"error": "Revisa el teléfono (9 cifras, o con prefijo internacional)."}, 422)
+    if not b.get("acepto"):
+        return JSONResponse({"error": "Necesitamos que aceptes la política de privacidad."}, 422)
+    destino = _destino_seguro(b.get("destino"))
     try:
-        data = valorar_inmueble(rc)
-    except AvmError:
-        return JSONResponse({"error": "No hemos podido preparar el informe ahora mismo."}, 503)
-    enviado = _enviar_informe(email, rc, para_publico(data))
-    with _db_lock:
-        _CON.execute("INSERT INTO leads(ts,email,rc,perfil,motivo,consentimiento,enviado) VALUES(?,?,?,?,?,1,?)", (
-            datetime.now(timezone.utc).isoformat(), email, rc,
-            str(b.get("perfil", ""))[:30], str(b.get("motivo", ""))[:30], int(enviado)))
-        _CON.commit()
-    if not enviado:
-        return JSONResponse({"error": "No hemos podido enviar el email. Inténtalo más tarde."}, 502)
+        tipo = CUENTAS.registrar(nombre, email, telefono, destino)
+    except orenes.OrenesError as e:
+        print("[idealisto] registro, envío de email falló:", e)
+        return JSONResponse({"error": "No hemos podido enviarte el email. Inténtalo en unos minutos."}, 503)
+    return {"ok": True, "tipo": tipo}
+
+
+@app.post("/api/acceso")
+async def api_acceso(request: Request):
+    if _limitado("acc:" + _ip(request), 8):
+        return JSONResponse({"error": "Demasiados intentos. Prueba dentro de un rato."}, 429)
+    try:
+        b = await request.json()
+    except Exception:
+        return JSONResponse({"error": "Petición no válida."}, 400)
+    email = str(b.get("email", "")).strip().lower()[:200]
+    if not _EMAIL_RE.match(email):
+        return JSONResponse({"error": "Revisa el email."}, 422)
+    try:
+        existe = CUENTAS.pedir_acceso(email, _destino_seguro(b.get("destino")))
+    except orenes.OrenesError:
+        return JSONResponse({"error": "No hemos podido enviarte el email. Inténtalo en unos minutos."}, 503)
+    if not existe:
+        return JSONResponse({"error": "No hay ninguna cuenta con ese email. Regístrate gratis.", "codigo": "no_existe"}, 404)
     return {"ok": True}
+
+
+@app.get("/acceso")
+def acceso(t: str = ""):
+    r = CUENTAS.consumir_enlace(t) if t else None
+    if not r:
+        return HTMLResponse(pagina("/acceso", "Enlace caducado | Idealisto", "Enlace de acceso caducado.",
+                                   '<main class="wrap doc"><h1>Este enlace ya no es válido</h1><p>Los enlaces caducan a las 24 horas '
+                                   'y solo se pueden usar una vez. <a href="/#valorar">Pide uno nuevo desde el valorador</a>.</p></main>',
+                                   _ld([_org()]), noindex=True), status_code=410)
+    sesion, destino, usuario, _primera = r
+    threading.Thread(target=CUENTAS.enviar_lead, args=(usuario,), daemon=True).start()
+    resp = RedirectResponse(_destino_seguro(destino), 303)
+    resp.set_cookie(COOKIE, sesion, max_age=SESION_DIAS * 86400, httponly=True, secure=True, samesite="lax", path="/")
+    return resp
+
+
+@app.get("/api/yo")
+def api_yo(request: Request):
+    u = usuario_de(request)
+    if not u:
+        return JSONResponse({"usuario": None}, headers={"Cache-Control": "no-store"})
+    return JSONResponse({"usuario": {"nombre": u["nombre"], "email": u["email"]}}, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/salir")
+def api_salir(request: Request):
+    CUENTAS.cerrar_sesion(request.cookies.get(COOKIE))
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(COOKIE, path="/")
+    return resp
+
+
+# ── Informe completo de pago ───────────────────────────────────────────────
+@app.post("/api/informe/checkout")
+async def api_informe_checkout(request: Request):
+    u = usuario_de(request)
+    if not u:
+        return JSONResponse({"error": "Entra en tu cuenta para comprar el informe.", "codigo": "registro"}, 401)
+    try:
+        b = await request.json()
+        vid = int(b.get("vid"))
+    except Exception:
+        return JSONResponse({"error": "Petición no válida."}, 400)
+    if not b.get("acepto_desistimiento"):
+        return JSONResponse({"error": "Necesitamos que aceptes la entrega inmediata del informe."}, 422)
+    try:
+        url = INFORMES.iniciar(u, vid)
+    except ValueError:
+        return JSONResponse({"error": "Valora primero el inmueble."}, 404)
+    except orenes.OrenesError as e:
+        print("[idealisto] checkout falló:", e)
+        return JSONResponse({"error": "No hemos podido iniciar el pago. Inténtalo en unos minutos."}, 503)
+    return {"url": url}
+
+
+@app.get("/api/informe/{cid}")
+def api_informe_estado(cid: int, request: Request):
+    u = usuario_de(request)
+    if not u:
+        return JSONResponse({"error": "sesion"}, 401)
+    try:
+        c = INFORMES.verificar_pago(cid, u)
+    except orenes.OrenesError as e:
+        print("[idealisto] verificar pago:", e)
+        return JSONResponse({"estado": "comprobando"}, headers={"Cache-Control": "no-store"})
+    if not c:
+        return JSONResponse({"error": "no_encontrado"}, 404)
+    return JSONResponse({"estado": c["estado"], "rc": c["rc"]}, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/informe/{cid}.docx")
+def informe_docx(cid: int, request: Request):
+    u = usuario_de(request)
+    c = INFORMES.compra(cid, u["id"]) if u else None
+    if not c or c["estado"] != "listo" or not INFORMES.ruta(cid).exists():
+        return no_encontrada()
+    return FileResponse(INFORMES.ruta(cid), filename=f"idealisto-informe-{c['rc']}.docx",
+                        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+
+def _pagina_cuenta(path: str, titulo: str, cuerpo: str) -> HTMLResponse:
+    return HTMLResponse(pagina(path, f"{titulo} | Idealisto", titulo, f'<main class="wrap doc">{cuerpo}</main>',
+                               _ld([_org()]), noindex=True), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/informe/ok", response_class=HTMLResponse)
+def informe_ok(request: Request, c: int = 0):
+    if not usuario_de(request):
+        return RedirectResponse(f"/mis-informes/", 303)
+    return _pagina_cuenta("/informe/ok", "Tu informe se está preparando", f"""
+<h1>Pago recibido: estamos preparando tu informe</h1>
+<p class="lead">Generamos el informe completo con los datos del Catastro, los testigos de la zona, el mercado oficial y el
+análisis del entorno. Suele tardar entre 30 segundos y 2 minutos.</p>
+<div class="caja-calc" id="estado" data-c="{int(c)}"><p class="hint">Comprobando el pago…</p></div>
+<p class="hint">También te enviaremos un email cuando esté listo. Lo tendrás siempre en <a href="/mis-informes/">Mis informes</a>.</p>
+<script>
+(function(){{
+  const caja=document.getElementById('estado'), c=caja.dataset.c; let n=0;
+  const pinta=(h)=>caja.innerHTML=h;
+  async function mira(){{
+    n++;
+    try{{
+      const r=await fetch('/api/informe/'+c,{{cache:'no-store'}}); const d=await r.json();
+      if(d.estado==='listo'){{ pinta('<p><strong>Tu informe está listo.</strong></p><a class="btn" href="/informe/'+c+'.docx">Descargar el informe (Word)</a>'); if(window.gtag) gtag('event','informe_listo'); return; }}
+      if(d.estado==='pendiente' && n>20){{ pinta('<p>No nos consta el pago. Si has pagado, espera un minuto y recarga la página.</p>'); return; }}
+      if(d.estado==='error' && n>6){{ pinta('<p>Ha habido un problema generando el informe. Lo reintentamos automáticamente; si no aparece en unos minutos, responde al email de confirmación y te lo enviamos.</p>'); }}
+      else pinta('<p class="hint">'+(d.estado==='generando'?'Generando el informe…':'Comprobando el pago…')+' <span class="count">'+(n*4)+' s</span></p>');
+    }}catch(e){{}}
+    setTimeout(mira, 4000);
+  }}
+  mira();
+}})();
+</script>""")
+
+
+@app.get("/mis-informes/", response_class=HTMLResponse)
+def mis_informes(request: Request):
+    u = usuario_de(request)
+    if not u:
+        return _pagina_cuenta("/mis-informes/", "Mis informes", '<h1>Mis informes</h1><p>Entra con tu email desde el '
+                              '<a href="/#valorar">valorador</a> para ver tus informes.</p>')
+    filas = ""
+    for c in INFORMES.compras(u["id"]):
+        d = json.loads(c["datos"] or "{}")
+        fecha = datetime.fromtimestamp(c["creada"]).strftime("%d/%m/%Y")
+        accion = (f'<a class="btn small" href="/informe/{c["id"]}.docx">Descargar</a>' if c["estado"] == "listo"
+                  else f'<a href="/informe/ok?c={c["id"]}">{"Preparándose…" if c["estado"] in ("pagada", "generando") else "Reintentar"}</a>')
+        filas += (f'<tr><td>{escape(fecha)}</td><td>{escape(d.get("direccion") or c["rc"])}<br><small class="mono">{escape(c["rc"])}</small></td>'
+                  f'<td>{accion}</td></tr>')
+    tabla = (f'<div class="scroll"><table><thead><tr><th>Fecha</th><th>Inmueble</th><th></th></tr></thead><tbody>{filas}</tbody></table></div>'
+             if filas else '<p>Todavía no has comprado ningún informe. <a href="/#valorar">Valora un inmueble</a>.</p>')
+    return _pagina_cuenta("/mis-informes/", "Mis informes",
+                          f'<h1>Mis informes</h1><p class="hint">{escape(u["nombre"] or "")} · {escape(u["email"])}</p>{tabla}')
 
 
 # ── Buscador de RC por dirección ────────────────────────────────────────────
@@ -801,9 +999,10 @@ def llms():
     faq = "\n".join(f"- {q} {a}" for q, a in FAQ)
     return f"""# {BRAND}
 
-> Valorador gratuito de inmuebles en España con solo la referencia catastral (20 caracteres).
-> Valora viviendas, casas, garajes y trasteros. Muestra valor de mercado con rango, €/m²,
-> media de la zona y precio de cierre estimado. No es una tasación oficial ECO/805/2003.
+> Valorador de inmuebles en España por referencia catastral (20 caracteres) con un motor de testigos:
+> datos del Catastro + inmuebles comparables en venta + precio de cierre. Valoración gratuita con cuenta
+> (nombre, email y teléfono); informe completo en Word por 4,70 € + IVA. Valora viviendas, casas, garajes
+> y trasteros. No es una tasación oficial ECO/805/2003.
 
 ## Uso
 - Web: {SITE_URL}/?rc=REFERENCIA_CATASTRAL (prellena el valorador)

@@ -137,7 +137,7 @@ class Zonas:
         prov_cat = CATASTRO_POR_CODIGO.get(prov_code, "")
         lugar = f" en {escape(nombre_mun)}" if nombre_mun else ""
         return (f'<h2>¿Cuánto vale tu inmueble{lugar}?</h2>'
-                '<p>Pega su referencia catastral o búscala por dirección y verás su valor de mercado, gratis y sin email.</p>'
+                '<p>Pega su referencia catastral o búscala por dirección y verás su valor de mercado, gratis con tu cuenta.</p>'
                 '<form class="mini-rc" action="/" method="get"><input name="rc" maxlength="30" autocomplete="off" '
                 'placeholder="Referencia catastral" aria-label="Referencia catastral">'
                 '<button class="btn" type="submit">Valorar gratis</button></form>'
