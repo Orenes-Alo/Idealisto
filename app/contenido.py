@@ -256,6 +256,50 @@ PAGINAS["metodologia"] = {
 """,
 }
 
+# ─── Equipo (autoría, E-E-A-T) ──────────────────────────────────────────────
+# Mismos datos que publica inversionnpl.com en «Quiénes somos» (WhoWeAre.tsx).
+EQUIPO = [
+    {"id": "juan-manuel-orenes", "nombre": "Juan Manuel Orenes Bastida", "cargo": "Socio fundador",
+     "colegiado": "Abogado colegiado n.º 2574 del Ilustre Colegio de la Abogacía de Murcia (ICAMUR)",
+     "bio": ("Más de 35 años de ejercicio ininterrumpido de la abogacía, especializado en derecho inmobiliario y "
+             "bancario. Fundó el despacho en 1993 y ha asesorado en cientos de operaciones de cesión de crédito "
+             "hipotecario, ejecuciones y negociaciones con entidades financieras. Es creador de un máster "
+             "universitario en compra de deuda hipotecaria (NPL), impartido con Universae, y autor de publicaciones "
+             "en Lefebvre, vLex y Aranzadi."),
+     "sabe": ["Derecho inmobiliario", "Derecho bancario", "Cesión de crédito hipotecario", "Ejecución hipotecaria"]},
+    {"id": "alonso-orenes", "nombre": "Alonso Orenes", "cargo": "Abogado · Director de Operaciones de InversionNPL",
+     "colegiado": "Abogado colegiado n.º 7927 del Ilustre Colegio de la Abogacía de Murcia (ICAMUR)",
+     "bio": ("Más de 8 años dirigiendo operaciones de inversión en crédito hipotecario y activos inmobiliarios, "
+             "desde la detección del activo hasta su venta. Dirige la plataforma InversionNPL y el desarrollo del "
+             "motor de testigos con el que valora Idealisto."),
+     "sabe": ["Activos NPL", "Valoración inmobiliaria", "Subastas judiciales", "Inversión inmobiliaria"]},
+]
+
+PAGINAS["equipo"] = {
+    "actualizado": "2026-10-25",
+    "title": "Quién está detrás de Idealisto | Equipo",
+    "desc": ("Idealisto es un servicio de Orenes & Asociados Abogados-Consultoría Legal, despacho de Murcia "
+             "especializado en derecho inmobiliario y bancario desde 1993."),
+    "miga": "Equipo",
+    "h1": "Quién está detrás de Idealisto",
+    "respuesta": ("Idealisto es un servicio de " + RAZON + ", un despacho de abogados de Murcia especializado en "
+                  "derecho inmobiliario y bancario, con origen en 1993. La metodología y la base de comparables son "
+                  "las que el despacho usa en su actividad profesional de valoración de activos inmobiliarios."),
+    "html": """
+<h2>¿Quién es el titular?</h2>
+<p><strong>""" + RAZON + """</strong> (NIF """ + NIF + """), """ + DOM + """. Es una sociedad profesional de abogados especializada en derecho inmobiliario y bancario: cesiones de crédito hipotecario, ejecuciones, subastas y valoración de activos. También es titular de <a href="https://inversionnpl.com/" rel="noopener">InversionNPL</a>, la plataforma de inversión en deuda hipotecaria, subastas y activos bancarios que comparte con Idealisto el motor de testigos.</p>
+
+<h2>¿Quién diseña la metodología?</h2>
+__EQUIPO__
+
+<h2>¿Por qué un despacho de abogados valora inmuebles?</h2>
+<p>Comprar deuda hipotecaria, pujar en una subasta o negociar con un banco exige saber cuánto vale el inmueble que hay detrás, y hacerlo con método. El despacho construyó para eso un motor de valoración por comparables (descrito en la <a href="/metodologia/">metodología</a>) y una base de inmuebles en venta con su histórico. Idealisto abre esa herramienta a cualquier propietario.</p>
+
+<h2>Contacto</h2>
+<p>Para cualquier consulta sobre una valoración o sobre tus datos: """ + MAIL + """.</p>
+""",
+}
+
 # ─── Legal ──────────────────────────────────────────────────────────────────
 PAGINAS["aviso-legal"] = {
     "title": "Aviso legal | Idealisto",

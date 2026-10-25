@@ -254,3 +254,9 @@ footer .cols{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
 .visor button{position:fixed;border:0;background:rgba(255,255,255,.12);color:#fff;font:600 2rem/1 var(--sans);width:48px;height:48px;border-radius:50%;cursor:pointer}
 .visor button:hover{background:rgba(255,255,255,.25)}
 .v-cerrar{top:16px;right:16px}.v-ant{left:16px;top:50%}.v-sig{right:16px;top:50%}
+
+/* Equipo y guías */
+.doc .persona{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+.doc .persona h3{margin:0 0 4px}
+.doc .persona .cargo{margin:0 0 8px;font-size:.92em;color:var(--muted)}
+.doc ul.guias li{margin:10px 0}

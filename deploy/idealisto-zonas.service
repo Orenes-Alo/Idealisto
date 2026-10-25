@@ -7,4 +7,6 @@ User=orenes
 WorkingDirectory=/home/orenes/idealisto
 EnvironmentFile=/home/orenes/idealisto/.env
 ExecStart=/home/orenes/idealisto/.venv/bin/python -m app.zonas_datos
+# Avisa a Bing/Yandex (IndexNow) de las páginas de zonas regeneradas; si falla, no tumba el servicio.
+ExecStartPost=-/home/orenes/idealisto/.venv/bin/python -m app.indexnow
 Nice=10

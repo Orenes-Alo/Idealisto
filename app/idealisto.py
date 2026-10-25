@@ -38,7 +38,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
                                RedirectResponse, Response)
 
-from . import calculadoras, contenido, fiscal
+from . import calculadoras, contenido, fiscal, guias
+from .indexnow import INDEXNOW_KEY
 from . import orenes
 from .cuentas import COOKIE, SESION_DIAS, Cuentas, normalizar_telefono
 from .informes import Informes
@@ -50,6 +51,7 @@ from .zonas import Zonas
 # CONFIGURACIÓN
 # ─────────────────────────────────────────────────────────────────────────────
 RAIZ = Path(__file__).resolve().parent.parent
+contenido.PAGINAS.update(guias.GUIAS)  # /guias/ y /guias/<slug>/ se pintan como el resto de páginas
 BRAND = "Idealisto"
 SITE_URL = os.getenv("SITE_URL", "https://idealisto.es").rstrip("/")
 LEGAL_NAME = contenido.RAZON
@@ -254,7 +256,11 @@ HOWTO = [
 # ─────────────────────────────────────────────────────────────────────────────
 def _org() -> dict:
     org = {"@type": "Organization", "@id": f"{SITE_URL}/#org", "name": BRAND, "url": SITE_URL,
-           "legalName": contenido.RAZON_TXT, "email": CONTACT_EMAIL, "logo": f"{SITE_URL}/logo.svg"}
+           "legalName": contenido.RAZON_TXT, "email": CONTACT_EMAIL, "logo": f"{SITE_URL}/logo.svg",
+           "taxID": contenido.NIF,
+           "address": {"@type": "PostalAddress", "streetAddress": "Avenida de la Libertad 5, 1.º A",
+                       "postalCode": "30009", "addressLocality": "Murcia", "addressCountry": "ES"},
+           "member": [{"@id": f"{SITE_URL}/equipo/#{m['id']}"} for m in contenido.EQUIPO]}
     if SAME_AS:
         org["sameAs"] = SAME_AS
     return org
@@ -337,6 +343,7 @@ __GA4__
       <a href="/precio-vivienda/">Precios por zona</a>
       <a href="/referencia-catastral/">Referencia catastral</a>
       <a href="/valor-de-referencia/">Valor de referencia</a>
+      <a href="/guias/">Guías</a>
       <a href="/#faq">Preguntas</a>
       <a href="/#valorar" id="cuenta" class="nav-cuenta">Entrar</a>
     </nav>
@@ -350,7 +357,7 @@ FOOT = r"""
     <div><strong>__BRAND__</strong> · __LEGAL__<br>
       Valoraciones automáticas orientativas. No constituyen una tasación oficial (Orden ECO/805/2003).<br>
       Datos catastrales: Dirección General del Catastro.</div>
-    <div><a href="/metodologia/">Metodología</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
+    <div><a href="/metodologia/">Metodología</a> · <a href="/equipo/">Equipo</a> · <a href="/guias/">Guías</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
   </div>
 </footer>
 <script>
@@ -463,9 +470,19 @@ def _fecha_es(iso: str) -> str:
 def render_secundaria(slug: str) -> str:
     p = contenido.PAGINAS[slug]
     path = f"/{slug}/"
+    padre = p.get("padre")  # (nombre, ruta) del nivel intermedio de la miga, p. ej. Guías
+    migas = [("Inicio", "/")] + ([padre] if padre else []) + [(p["miga"], path)]
     graph = [_org(), {"@type": "BreadcrumbList", "itemListElement": [
-        {"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE_URL + "/"},
-        {"@type": "ListItem", "position": 2, "name": p["miga"], "item": SITE_URL + path}]}]
+        {"@type": "ListItem", "position": i + 1, "name": n, "item": SITE_URL + r} for i, (n, r) in enumerate(migas)]}]
+    html = p["html"]
+    if "__EQUIPO__" in html:
+        html = html.replace("__EQUIPO__", "".join(
+            f'<div class="persona" id="{m["id"]}"><h3>{escape(m["nombre"])}</h3>'
+            f'<p class="cargo">{escape(m["cargo"])} · {escape(m["colegiado"])}</p>'
+            f'<p>{escape(m["bio"])}</p></div>' for m in contenido.EQUIPO))
+        graph += [{"@type": "Person", "@id": f"{SITE_URL}{path}#{m['id']}", "name": m["nombre"], "jobTitle": m["cargo"],
+                   "description": m["colegiado"], "knowsAbout": m["sabe"], "worksFor": {"@id": f"{SITE_URL}/#org"},
+                   "url": f"{SITE_URL}{path}#{m['id']}"} for m in contenido.EQUIPO]
     if p.get("actualizado"):
         graph.append({"@type": "Article", "headline": p["h1"], "description": p["desc"],
                       "inLanguage": "es-ES", "dateModified": p["actualizado"],
@@ -487,11 +504,12 @@ def render_secundaria(slug: str) -> str:
         '<div class="cta-box"><div><strong>¿Cuánto vale tu inmueble?</strong><br>'
         'Pega su referencia catastral y míralo en segundos, gratis con tu cuenta.</div>'
         '<a class="btn" href="/#valorar">Valorar gratis</a></div>')
-    cuerpo = (f'<main class="wrap doc"><p class="crumbs"><a href="/">Inicio</a> › {escape(p["miga"])}</p>'
+    crumbs = " › ".join(f'<a href="{r}">{escape(n)}</a>' for n, r in migas[:-1]) + f' › {escape(p["miga"])}'
+    cuerpo = (f'<main class="wrap doc"><p class="crumbs">{crumbs}</p>'
               f'<h1>{escape(p["h1"])}</h1>'
               + (f'<p class="fecha">Actualizado el {_fecha_es(p["actualizado"])}</p>' if p.get("actualizado") else "")
               + (f'<p class="answer"><strong>Respuesta rápida:</strong> {p["respuesta"]}</p>' if p.get("respuesta") else "")
-              + p["html"].replace("__BUSCADOR__", buscador("enlace")) + cta + faq + "</main>")
+              + html.replace("__BUSCADOR__", buscador("enlace")) + cta + faq + "</main>")
     return pagina(path, p["title"], p["desc"], cuerpo, _ld(graph))
 
 
@@ -924,6 +942,19 @@ def secundaria(slug: str):
     return HTMLResponse(SECUNDARIAS[slug], headers={"Cache-Control": "public, max-age=600"})
 
 
+@app.get("/guias/{slug}/", response_class=HTMLResponse)
+def guia(slug: str):
+    clave = f"guias/{slug}"
+    if clave not in SECUNDARIAS:
+        return no_encontrada()
+    return HTMLResponse(SECUNDARIAS[clave], headers={"Cache-Control": "public, max-age=600"})
+
+
+@app.get("/guias/{slug}")
+def guia_sin_barra(slug: str):
+    return RedirectResponse(f"/guias/{slug}/", 301)
+
+
 @app.get("/privacidad.html")
 def privacidad_antigua():
     return RedirectResponse("/privacidad/", 301)
@@ -1008,13 +1039,49 @@ def llms():
 ## Uso
 - Web: {SITE_URL}/?rc=REFERENCIA_CATASTRAL (prellena el valorador)
 - Metodología: {SITE_URL}/metodologia/
+- Quién está detrás: {SITE_URL}/equipo/
+- Guías (herencia, divorcio, venta, alquiler, subasta): {SITE_URL}/guias/
+- Precio de la vivienda por provincia y municipio: {SITE_URL}/precio-vivienda/
+- Calculadoras (ITP, Sucesiones, plusvalía, rentabilidad): {SITE_URL}/calculadoras/
+- Texto completo para modelos de lenguaje: {SITE_URL}/llms-full.txt
 
 ## Preguntas frecuentes
 {faq}
 """
 
 
-ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "og.png": "image/png",
+def _texto(html: str) -> str:
+    """HTML de una página → texto plano legible (llms-full.txt)."""
+    t = re.sub(r"<h2[^>]*>", "\n## ", html)
+    t = re.sub(r"<h3[^>]*>", "\n### ", t)
+    t = re.sub(r"<li[^>]*>", "\n- ", t)
+    t = re.sub(r"</(p|ul|ol|div|h2|h3)>", "\n", t)
+    t = re.sub(r"<[^>]+>", "", t).replace("__BUSCADOR__", "").replace("__EQUIPO__", "")
+    t = t.replace("&amp;", "&").replace("&nbsp;", " ")
+    return re.sub(r"\n{3,}", "\n\n", t).strip()
+
+
+@app.get("/llms-full.txt", response_class=PlainTextResponse)
+def llms_full():
+    partes = [llms()]
+    for slug, p in contenido.PAGINAS.items():
+        if slug in ("privacidad", "aviso-legal"):
+            continue
+        cuerpo = _texto(p["html"])
+        if slug == "equipo":
+            cuerpo = cuerpo + "\n" + "\n".join(f"- {m['nombre']}, {m['cargo']}. {m['colegiado']}. {m['bio']}" for m in contenido.EQUIPO)
+        resp = _texto(p.get("respuesta", ""))
+        faq = "\n".join(f"- {q} {a}" for q, a in p.get("faq", []))
+        partes.append(f"\n\n# {p['h1']}\nURL: {SITE_URL}/{slug}/\n\n{resp}\n\n{cuerpo}" + (f"\n\n## Preguntas frecuentes\n{faq}" if faq else ""))
+    return "".join(partes)
+
+
+@app.get("/" + INDEXNOW_KEY + ".txt", response_class=PlainTextResponse)
+def indexnow_clave():
+    return INDEXNOW_KEY
+
+
+ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "favicon.ico": "image/x-icon", "og.png": "image/png",
              "buscador.js": "application/javascript", "sw.js": "application/javascript", "calc.js": "application/javascript",
              "manifest.webmanifest": "application/manifest+json",
              "icono-192.png": "image/png", "icono-512.png": "image/png"}
