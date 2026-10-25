@@ -872,12 +872,18 @@ análisis del entorno. Suele tardar entre 30 segundos y 2 minutos.</p>
 <p class="hint">También te enviaremos un email cuando esté listo. Lo tendrás siempre en <a href="/mis-informes/">Mis informes</a>.</p>
 <script>
 (function(){{
-  const caja=document.getElementById('estado'), c=caja.dataset.c; let n=0;
+  const caja=document.getElementById('estado'), c=caja.dataset.c; let n=0, comprado=false;
   const pinta=(h)=>caja.innerHTML=h;
   async function mira(){{
     n++;
     try{{
       const r=await fetch('/api/informe/'+c,{{cache:'no-store'}}); const d=await r.json();
+      // Pago confirmado (ya se genera o está listo): conversión en GA4, una vez y con id para no duplicarla.
+      if(!comprado && window.gtag && ['generando','listo','error'].includes(d.estado)){{
+        gtag('event','purchase',{{transaction_id:'informe-'+c,value:5.69,tax:0.99,currency:'EUR',
+          items:[{{item_id:'informe-completo',item_name:'Informe completo de valoración',price:5.69,quantity:1}}]}});
+        comprado=true;
+      }}
       if(d.estado==='listo'){{ pinta('<p><strong>Tu informe está listo.</strong></p><a class="btn" href="/informe/'+c+'.docx">Descargar el informe (Word)</a>'); if(window.gtag) gtag('event','informe_listo'); return; }}
       if(d.estado==='pendiente' && n>20){{ pinta('<p>No nos consta el pago. Si has pagado, espera un minuto y recarga la página.</p>'); return; }}
       if(d.estado==='error' && n>6){{ pinta('<p>Ha habido un problema generando el informe. Lo reintentamos automáticamente; si no aparece en unos minutos, responde al email de confirmación y te lo enviamos.</p>'); }}
