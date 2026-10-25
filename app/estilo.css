@@ -260,3 +260,10 @@ footer .cols{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
 .doc .persona h3{margin:0 0 4px}
 .doc .persona .cargo{margin:0 0 8px;font-size:.92em;color:var(--muted)}
 .doc ul.guias li{margin:10px 0}
+
+/* Aviso de cookies: Aceptar y Rechazar al mismo nivel */
+.ck{position:fixed;left:16px;right:16px;bottom:16px;z-index:50;max-width:720px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(15,23,42,.18);padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+.ck[hidden]{display:none}
+.ck p{margin:0;flex:1 1 320px;color:var(--ink)}
+.ck-b{display:flex;gap:8px}
+.ck-b button{font:inherit;font-weight:600;padding:9px 18px;border-radius:10px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer}

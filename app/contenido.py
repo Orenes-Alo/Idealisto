@@ -362,8 +362,10 @@ PAGINAS["privacidad"] = {
 <h2>A quién se comunican</h2>
 <p><strong>No cedemos tus datos a inmobiliarias ni a terceros para sus propios fines.</strong> Los datos se comparten dentro del mismo responsable entre Idealisto e InversionNPL. Los tratan, por nuestra cuenta y con contrato de encargo, el proveedor de alojamiento del servidor, el de envío de emails (Resend) y el de pagos (Stripe, que recibe los datos de tu tarjeta directamente; nosotros no los vemos). Algunos de estos proveedores pueden tratar datos fuera del Espacio Económico Europeo con las garantías del RGPD (cláusulas contractuales tipo o decisiones de adecuación).</p>
 
-<h2>Cookies</h2>
-<p>Usamos una única cookie técnica para mantener tu sesión iniciada, necesaria para el servicio. Si activamos analítica web, será con IP anonimizada y la indicaremos aquí junto con el aviso de cookies correspondiente.</p>
+<h2 id="cookies">Cookies</h2>
+<p><strong>Técnica (siempre):</strong> una cookie de sesión propia para mantener tu sesión iniciada; es necesaria para el servicio y no requiere consentimiento.</p>
+<p><strong>Analítica (solo si la aceptas):</strong> Google Analytics 4, de Google Ireland Limited, para medir de forma agregada cómo se usa la web (páginas vistas, valoraciones, registros). Instala las cookies <code>_ga</code> y <code>_ga_*</code>, que duran hasta 2 años, con la IP anonimizada. Google puede tratar datos fuera del Espacio Económico Europeo con las garantías del RGPD. No se activan hasta que pulsas «Aceptar» en el aviso; si pulsas «Rechazar», no se carga Google Analytics.</p>
+<p>Puedes cambiar tu elección cuando quieras desde el enlace «Cookies» del pie de página, o borrar las cookies desde la configuración de tu navegador.</p>
 
 <h2>Tus derechos</h2>
 <p>Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a {MAIL}. Para dejar de recibir información de InversionNPL basta con el enlace de baja de cualquier email. Si consideras que no hemos atendido bien tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">www.aepd.es</a>).</p>

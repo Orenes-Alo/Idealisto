@@ -357,7 +357,7 @@ FOOT = r"""
     <div><strong>__BRAND__</strong> · __LEGAL__<br>
       Valoraciones automáticas orientativas. No constituyen una tasación oficial (Orden ECO/805/2003).<br>
       Datos catastrales: Dirección General del Catastro.</div>
-    <div><a href="/metodologia/">Metodología</a> · <a href="/equipo/">Equipo</a> · <a href="/guias/">Guías</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
+    <div><a href="/metodologia/">Metodología</a> · <a href="/equipo/">Equipo</a> · <a href="/guias/">Guías</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/privacidad/#cookies" onclick="if(window.idealistoCookies){event.preventDefault();idealistoCookies();}">Cookies</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
   </div>
 </footer>
 <script>
@@ -369,17 +369,39 @@ FOOT = r"""
   }).catch(()=>{});
 })();
 </script>
+__COOKIES__
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));</script>
 </body>
 </html>"""
 
 
 def _ga4() -> str:
+    """GA4 no va en el <head>: lo carga el aviso de cookies (_cookies) solo si se acepta (LSSI art. 22.2)."""
+    return ""
+
+
+def _cookies() -> str:
+    """Aviso de cookies con «Aceptar» y «Rechazar» al mismo nivel (guía de la AEPD). Sin consentimiento no
+    se carga Google Analytics; la elección se guarda en este navegador y se cambia con «Cookies» del pie."""
     if not GA4_ID:
         return ""
-    return (f'<script async src="https://www.googletagmanager.com/gtag/js?id={escape(GA4_ID)}"></script>'
-            f"<script>window.dataLayer=window.dataLayer||[];function gtag(){{dataLayer.push(arguments)}}"
-            f"gtag('js',new Date());gtag('config','{escape(GA4_ID)}',{{anonymize_ip:true}});</script>")
+    gid = json.dumps(GA4_ID)
+    return (
+        '<div id="ck" class="ck" role="dialog" aria-label="Aviso de cookies" hidden><p>Usamos cookies de analítica '
+        '(Google Analytics) para saber cómo se usa la web y mejorarla. Solo se activan si las aceptas. '
+        '<a href="/privacidad/#cookies">Más información</a></p><div class="ck-b">'
+        '<button type="button" id="ck-no">Rechazar</button><button type="button" id="ck-si">Aceptar</button></div></div>'
+        "<script>(function(){var K='idealisto_cookies',ID=" + gid + ",b=document.getElementById('ck');"
+        "function carga(){if(window.gtag)return;var s=document.createElement('script');s.async=true;"
+        "s.src='https://www.googletagmanager.com/gtag/js?id='+ID;document.head.appendChild(s);"
+        "window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};"
+        "gtag('js',new Date());gtag('config',ID,{anonymize_ip:true});}"
+        "var v=null;try{v=localStorage.getItem(K)}catch(e){}"
+        "if(v==='si')carga();else if(v!=='no')b.hidden=false;"
+        "function fija(x){try{localStorage.setItem(K,x)}catch(e){}b.hidden=true;if(x==='si')carga();}"
+        "document.getElementById('ck-si').onclick=function(){fija('si')};"
+        "document.getElementById('ck-no').onclick=function(){fija('no')};"
+        "window.idealistoCookies=function(){try{localStorage.removeItem(K)}catch(e){}b.hidden=false;};})();</script>")
 
 
 def pagina(path: str, title: str, desc: str, cuerpo: str, jsonld: str,
@@ -389,6 +411,7 @@ def pagina(path: str, title: str, desc: str, cuerpo: str, jsonld: str,
             .replace("__JSONLD__", jsonld)
             .replace("__CSS__", CSS)
             .replace("__GA4__", _ga4())
+            .replace("__COOKIES__", _cookies())
             .replace("__TITLE__", escape(title))
             .replace("__DESC__", escape(desc))
             .replace("__OGTITLE__", escape(og_title or title))
