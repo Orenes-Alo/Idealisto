@@ -17,7 +17,9 @@ import urllib.error
 import urllib.request
 
 INDEXNOW_KEY = os.getenv("INDEXNOW_KEY", "5b0f7d2c9a4e4f1b8c3d6e2a7f9b1c4d")
-ENDPOINT = "https://api.indexnow.org/indexnow"
+# Bing comparte cada aviso con el resto de buscadores del protocolo. api.indexnow.org
+# respondía 403 a la primera verificación de la clave (25-10-2026); Bing, 200.
+ENDPOINT = os.getenv("INDEXNOW_ENDPOINT", "https://www.bing.com/indexnow")
 MAX_URLS = 10000  # límite por petición del protocolo
 
 

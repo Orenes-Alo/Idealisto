@@ -1076,7 +1076,7 @@ def llms_full():
     return "".join(partes)
 
 
-@app.get("/" + INDEXNOW_KEY + ".txt", response_class=PlainTextResponse)
+@app.api_route("/" + INDEXNOW_KEY + ".txt", methods=["GET", "HEAD"], response_class=PlainTextResponse)
 def indexnow_clave():
     return INDEXNOW_KEY
 
