@@ -592,6 +592,30 @@ _HOME_CACHE = render_home()
 app = FastAPI(title=BRAND, docs_url=None, redoc_url=None, openapi_url=None)
 
 
+class HeadComoGet:
+    """HEAD = GET sin cuerpo en todas las rutas (las de FastAPI solo aceptan GET y daban 405 a los
+    rastreadores y comprobadores de sitemaps que piden primero las cabeceras)."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope["method"] != "HEAD":
+            return await self.app(scope, receive, send)
+
+        async def sin_cuerpo(msg):
+            if msg["type"] == "http.response.body":
+                if msg.get("more_body"):
+                    return
+                msg = {"type": "http.response.body", "body": b"", "more_body": False}
+            await send(msg)
+
+        await self.app(dict(scope, method="GET"), receive, sin_cuerpo)
+
+
+app.add_middleware(HeadComoGet)
+
+
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     resp = await call_next(request)
