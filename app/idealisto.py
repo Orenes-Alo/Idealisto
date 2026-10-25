@@ -1020,6 +1020,15 @@ ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "og.pn
              "icono-192.png": "image/png", "icono-512.png": "image/png"}
 
 
+@app.get("/muestra/{nombre}")
+def muestra(nombre: str):
+    """Páginas del informe de ejemplo (static/muestra/informe-NN.webp)."""
+    ruta = RAIZ / "static" / "muestra" / nombre
+    if not re.fullmatch(r"informe-\d{2}\.webp", nombre) or not ruta.exists():
+        return no_encontrada()
+    return FileResponse(ruta, media_type="image/webp", headers={"Cache-Control": "public, max-age=604800"})
+
+
 @app.get("/{nombre}")
 def estatico(nombre: str):
     if nombre in ESTATICOS:

@@ -231,3 +231,26 @@ footer .cols{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
 .hero-band .trust li::before{color:#4ADE80}
 .tool{color:var(--ink)}
 .crumbs a,.doc a{color:var(--brand)}
+
+/* Galería del informe de muestra */
+#informe .informe{grid-template-columns:1fr 320px;align-items:start;margin-top:18px}
+@media(max-width:900px){#informe .informe{grid-template-columns:1fr}}
+.galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.pag{margin:0}
+.pag button{display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:zoom-in;box-shadow:var(--shadow);transition:transform .15s,border-color .15s}
+.pag button:hover{transform:translateY(-3px);border-color:var(--brand)}
+.pag img{display:block;width:100%;height:auto;aspect-ratio:1100/1556}
+.pag figcaption{font-size:.82rem;line-height:1.35;margin-top:8px;color:var(--muted)}
+.pag figcaption strong{display:block;color:var(--ink);font-size:.88rem}
+.pag:first-child{grid-column:span 2;grid-row:span 2}
+.pag:first-child figcaption strong{font-size:1rem}
+@media(max-width:520px){.galeria{grid-template-columns:1fr 1fr}.pag:first-child{grid-column:span 2;grid-row:auto}}
+#informe .informe-cta{position:sticky;top:20px}
+.informe-cta .nota{font-size:.78rem;color:#94A3B8;margin:14px 0 0}
+.visor{border:0;padding:0;background:transparent;max-width:min(92vw,900px);max-height:96vh;overflow:visible}
+.visor::backdrop{background:rgba(15,23,42,.85)}
+.visor img{display:block;max-width:100%;max-height:88vh;margin:0 auto;border-radius:6px;background:#fff}
+.visor .v-pie{color:#E2E8F0;text-align:center;margin:10px 0 0;font-size:.9rem}
+.visor button{position:fixed;border:0;background:rgba(255,255,255,.12);color:#fff;font:600 2rem/1 var(--sans);width:48px;height:48px;border-radius:50%;cursor:pointer}
+.visor button:hover{background:rgba(255,255,255,.25)}
+.v-cerrar{top:16px;right:16px}.v-ant{left:16px;top:50%}.v-sig{right:16px;top:50%}
