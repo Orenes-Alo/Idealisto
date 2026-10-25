@@ -164,12 +164,12 @@ class Cuentas:
 
 def email_html(nombre: str, cuerpo: str, boton: str, url: str, extra: str = "") -> str:
     saludo = f"Hola {escape(nombre.split()[0])}," if nombre else "Hola,"
-    return f"""<!doctype html><html lang="es"><body style="margin:0;background:#f7f4ee;font-family:Arial,Helvetica,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#f7f4ee"><tr><td align="center" style="padding:28px 16px">
-<table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;background:#fffdf9;border:1px solid #e4ddd0;border-radius:14px">
-<tr><td style="padding:26px 28px 6px"><span style="display:inline-block;background:#0f3d3e;color:#f4c95d;font:700 18px Georgia,serif;width:34px;height:34px;line-height:34px;text-align:center;border-radius:8px">i</span>
-<span style="font:700 20px Georgia,serif;color:#0f3d3e;vertical-align:middle;margin-left:8px">Idealisto</span></td></tr>
-<tr><td style="padding:14px 28px 6px;color:#10201f;font-size:15px;line-height:1.6"><p style="margin:0 0 12px">{saludo}</p><p style="margin:0 0 12px">{escape(cuerpo)}</p>{extra}</td></tr>
-<tr><td align="center" style="padding:10px 28px 24px"><a href="{escape(url)}" style="display:inline-block;background:#0f3d3e;color:#fff;text-decoration:none;font-weight:700;padding:14px 26px;border-radius:10px">{escape(boton)}</a></td></tr>
-<tr><td style="padding:0 28px 22px;color:#5a6b69;font-size:12px;line-height:1.5">Si no has sido tú, ignora este email. Idealisto es un servicio de Orenes &amp; Asociados, titular también de InversionNPL.</td></tr>
+    return f"""<!doctype html><html lang="es"><body style="margin:0;background:#F8FAFC;font-family:Outfit,Arial,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F8FAFC"><tr><td align="center" style="padding:28px 16px">
+<table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px">
+<tr><td style="padding:26px 28px 6px"><span style="display:inline-block;background:#2563EB;color:#fff;font:700 18px Georgia,serif;width:34px;height:34px;line-height:34px;text-align:center;border-radius:8px">i</span>
+<span style="font:700 20px Outfit,Arial,sans-serif;color:#0F172A;vertical-align:middle;margin-left:8px">Idealisto</span></td></tr>
+<tr><td style="padding:14px 28px 6px;color:#0F172A;font-size:15px;line-height:1.6"><p style="margin:0 0 12px">{saludo}</p><p style="margin:0 0 12px">{escape(cuerpo)}</p>{extra}</td></tr>
+<tr><td align="center" style="padding:10px 28px 24px"><a href="{escape(url)}" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;font-weight:700;padding:14px 26px;border-radius:10px">{escape(boton)}</a></td></tr>
+<tr><td style="padding:0 28px 22px;color:#475569;font-size:12px;line-height:1.5">Si no has sido tú, ignora este email. Idealisto es un servicio de Orenes &amp; Asociados, titular también de InversionNPL.</td></tr>
 </table></td></tr></table></body></html>"""

@@ -307,7 +307,7 @@ HEAD = r"""<!doctype html>
 <link rel="alternate" hreflang="es-ES" href="__CANON__">
 <link rel="alternate" hreflang="x-default" href="__CANON__">
 <meta name="robots" content="__ROBOTS__">
-<meta name="theme-color" content="#0f3d3e">
+<meta name="theme-color" content="#0F172A">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_ES">
 <meta property="og:site_name" content="__BRAND__">
@@ -323,13 +323,14 @@ HEAD = r"""<!doctype html>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&text=i&display=swap" rel="stylesheet">
 <script type="application/ld+json">__JSONLD__</script>
 __GA4__
 <style>__CSS__</style>
 </head>
 <body>
-<div class="wrap">
+<div class="topbar"><div class="wrap">
   <header class="top">
     <a class="logo" href="/" aria-label="__BRAND__ inicio"><b>i</b>__BRAND__</a>
     <nav aria-label="principal">
@@ -340,7 +341,7 @@ __GA4__
       <a href="/#valorar" id="cuenta" class="nav-cuenta">Entrar</a>
     </nav>
   </header>
-</div>
+</div></div>
 """
 
 FOOT = r"""

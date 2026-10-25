@@ -149,7 +149,7 @@ class Informes:
                                        f"Tu informe completo de la referencia catastral {fila[0]} ya está listo. "
                                        f"Importe: 4,70 € + 21 % IVA = 5,69 €. Puedes descargarlo cuando quieras desde «Mis informes».",
                                        "Descargar el informe", f"{SITE}/mis-informes/",
-                                       '<p style="margin:0 0 12px;color:#5a6b69;font-size:13px">Si necesitas factura, responde a este email con tus datos fiscales.</p>')},
+                                       '<p style="margin:0 0 12px;color:#475569;font-size:13px">Si necesitas factura, responde a este email con tus datos fiscales.</p>')},
                     timeout=20)
             except orenes.OrenesError as e:
                 print("[idealisto] aviso de informe listo falló:", e)
