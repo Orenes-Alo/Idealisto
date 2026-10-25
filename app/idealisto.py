@@ -1081,7 +1081,7 @@ def indexnow_clave():
     return INDEXNOW_KEY
 
 
-ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "favicon.ico": "image/x-icon", "og.png": "image/png",
+ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "favicon.ico": "image/x-icon", "BingSiteAuth.xml": "application/xml", "og.png": "image/png",
              "buscador.js": "application/javascript", "sw.js": "application/javascript", "calc.js": "application/javascript",
              "manifest.webmanifest": "application/manifest+json",
              "icono-192.png": "image/png", "icono-512.png": "image/png"}
