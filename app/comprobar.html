@@ -1,0 +1,46 @@
+<main class="wrap doc ancha"><p class="crumbs"><a href="/">Inicio</a> › ¿Está bien de precio?</p>
+<h1>¿Está bien de precio el piso que vas a comprar?</h1>
+<p class="answer"><strong>Respuesta rápida:</strong> pega la referencia catastral del inmueble (o búscala por la dirección del anuncio) y el precio que te piden. El motor de testigos lo valora con sus datos del Catastro y los inmuebles comparables de alrededor y te dice si es un <strong>gran precio</strong>, un <strong>precio justo</strong>, si es <strong>caro</strong> o si es <strong>sospechosamente barato</strong>. Además contrasta los metros del anuncio con los del Catastro y te calcula el ITP. Gratis y sin registro.</p>
+
+<div class="caja-calc" id="comprobar">
+  <form id="fc" novalidate>
+    <div class="calc-grid">
+      <label class="ancho">Referencia catastral del inmueble<input id="rc" name="rc" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30" placeholder="9872023VH5797S0001WX"></label>
+      <label>Precio que te piden (€)<input id="precio" name="precio" type="number" inputmode="numeric" min="3000" step="500" placeholder="150000"></label>
+      <label>Metros que dice el anuncio <small>Opcional: los contrastamos con el Catastro</small><input id="m2" name="m2" type="number" inputmode="numeric" min="10" step="1" placeholder="90"></label>
+    </div>
+    <details class="b-det"><summary>¿No tienes la referencia? Búscala con la dirección del anuncio</summary>__BUSCADOR__</details>
+    <button class="btn" id="go" type="submit">Comprobar precio</button>
+    <p class="err" id="e" role="alert" aria-live="polite"></p>
+    <p class="loading" id="ld">Consultando el Catastro y los inmuebles comparables de la zona… puede tardar unos segundos.</p>
+  </form>
+  <div id="res" aria-live="polite"></div>
+</div>
+
+<h2>¿Cómo sabemos si está bien de precio?</h2>
+<p>Con la referencia catastral obtenemos del Catastro la superficie, el uso, el año y la ubicación exacta del inmueble, y lo comparamos con los inmuebles parecidos en venta a su alrededor: el mismo motor de testigos con el que valoramos cualquier vivienda en Idealisto. Con eso situamos el precio que te piden:</p>
+<ul>
+  <li><strong>Gran precio</strong>: por debajo de lo que piden 3 de cada 4 inmuebles comparables.</li>
+  <li><strong>Precio justo</strong>: dentro del rango central del mercado de la zona.</li>
+  <li><strong>Caro</strong>: por encima de lo que piden 3 de cada 4 inmuebles comparables.</li>
+  <li><strong>Demasiado barato</strong>: muy por debajo del tramo bajo. Casi nunca es un chollo sin más: suele haber ocupación, cargas, nuda propiedad o un estado muy malo.</li>
+</ul>
+
+<h2>¿Por qué contrastar los metros con el Catastro?</h2>
+<p>Porque un precio que parece bueno deja de serlo si el piso tiene menos metros de los que dice el anuncio. Los anuncios suelen dar la superficie construida con la parte proporcional de zonas comunes, hasta un 10–15 % más que la del Catastro. Una diferencia mayor merece una pregunta al vendedor antes de seguir.</p>
+
+<h2>Antes de pagar ninguna señal</h2>
+<ul>
+  <li><strong>Pide la nota simple</strong> del Registro de la Propiedad (unos 10 €): titular, hipotecas, embargos y otras cargas.</li>
+  <li><strong>Comprueba qué se vende</strong>: el pleno dominio no vale lo mismo que la <a href="https://inversionnpl.com/guias/nuda-propiedad-inversion">nuda propiedad</a>.</li>
+  <li><strong>Si está ocupado</strong>, el precio baja por algo y la salida lleva tiempo y dinero: <a href="https://inversionnpl.com/guias/comprar-piso-okupado-inversion">qué supone comprar un piso ocupado</a>.</li>
+  <li><strong>Deudas que siguen al inmueble</strong>: la comunidad del año en curso y los tres anteriores y el IBI pendiente. El vendedor debe aportar el certificado de deudas de la comunidad.</li>
+  <li><strong>Impuestos</strong>: el ITP se paga sobre el mayor entre el precio y el <a href="/valor-de-referencia/">valor de referencia</a> del Catastro. Calcúlalo con tus reducciones en la <a href="/calculadoras/itp/">calculadora de ITP</a>.</li>
+  <li><strong>Si es una subasta</strong>, las reglas cambian: mira <a href="/guias/valor-vivienda-subasta/">cómo valorar una vivienda en subasta</a>.</li>
+</ul>
+
+<h2>Preguntas frecuentes</h2>
+__FAQ__
+<p class="hint">Comparación orientativa con precios de oferta de inmuebles comparables, no con precios escriturados. No es una tasación oficial (Orden ECO/805/2003). Si no hay suficientes comparables cerca, te lo decimos en lugar de inventar una cifra.</p>
+</main>
+<script src="/comprobar.js?v=1" defer></script>

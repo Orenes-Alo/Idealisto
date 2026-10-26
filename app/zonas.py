@@ -142,7 +142,17 @@ class Zonas:
                 'placeholder="Referencia catastral" aria-label="Referencia catastral">'
                 '<button class="btn" type="submit">Valorar gratis</button></form>'
                 f'<details class="b-det"><summary>¿No la tienes? Búscala por dirección</summary>'
-                f'__BUSCADOR__{escape(prov_cat)}|{escape(nombre_mun or "")}__</details>')
+                f'__BUSCADOR__{escape(prov_cat)}|{escape(nombre_mun or "")}__</details>'
+                f'<h2>¿Vas a comprar{lugar}? Comprueba si está bien de precio</h2>'
+                '<p>Pega la referencia catastral del piso que te interesa y el precio que te piden: te decimos si es un gran '
+                'precio, un precio justo, caro o sospechosamente barato. Gratis y sin registro.</p>'
+                '<form class="mini-rc mini-comprar" action="/comprobar-precio/" method="get">'
+                '<input name="rc" maxlength="30" autocomplete="off" placeholder="Referencia catastral" aria-label="Referencia catastral">'
+                '<input name="precio" type="number" inputmode="numeric" min="3000" step="500" placeholder="Precio que te piden (€)" '
+                'aria-label="Precio que te piden en euros" class="precio">'
+                '<button class="btn" type="submit">Comprobar precio</button></form>'
+                '<p class="hint">¿No tienes la referencia? Búscala con la dirección del anuncio en '
+                '<a href="/comprobar-precio/">la herramienta</a>.</p>')
 
     def _ld(self, path: str, migas: list[tuple[str, str]], nombre_lugar: str, desc: str,
             geo: tuple | None, faq: list[tuple[str, str]], site: str) -> list:

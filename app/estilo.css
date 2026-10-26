@@ -267,3 +267,19 @@ footer .cols{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-bet
 .ck p{margin:0;flex:1 1 320px;color:var(--ink)}
 .ck-b{display:flex;gap:8px}
 .ck-b button{font:inherit;font-weight:600;padding:9px 18px;border-radius:10px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);cursor:pointer}
+
+/* «¿Está bien de precio?» */
+.calc-grid .ancho{grid-column:1/-1}
+#fc .btn{margin-top:14px}
+.semaforo{border:2px solid;border-radius:var(--radius);padding:18px 20px;margin-top:18px;background:var(--card)}
+.semaforo .sem-tit{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;line-height:1.15}
+.semaforo .kv{margin:12px 0}
+.semaforo small{color:var(--muted)}
+.s-bien{border-color:#16A34A;background:#F0FDF4}.s-bien .sem-tit{color:#166534}
+.s-justo{border-color:#2563EB;background:#EFF6FF}.s-justo .sem-tit{color:#1E40AF}
+.s-caro{border-color:#DC2626;background:#FEF2F2}.s-caro .sem-tit{color:#991B1B}
+.s-mal{border-color:#C2410C;background:#FFF7ED}.s-mal .sem-tit{color:#9A3412}
+.cta-registro{background:#fff;border-radius:10px;padding:12px 14px;margin:12px 0;font-size:.95rem}
+.cta-registro .btn{display:inline-block;margin-top:8px;text-decoration:none;color:#fff}
+.mini-comprar .precio{font:600 1rem var(--sans);letter-spacing:0;text-transform:none;max-width:230px}
+@media(max-width:520px){.mini-comprar .precio{max-width:none}}

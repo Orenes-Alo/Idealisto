@@ -231,6 +231,7 @@ GUIAS["guias"] = {
   <li><a href="/guias/cuanto-pedir-al-vender-mi-casa/"><strong>Quiero vender</strong></a>: precio de salida, precio de cierre y gastos de la venta.</li>
   <li><a href="/guias/cuanto-cobrar-de-alquiler/"><strong>Quiero alquilar</strong></a>: renta de la zona, zonas tensionadas y rentabilidad.</li>
   <li><a href="/guias/valor-vivienda-subasta/"><strong>Me interesa una subasta</strong></a>: valor de subasta frente a valor de mercado.</li>
+  <li><a href="/comprobar-precio/"><strong>Voy a comprar</strong></a>: comprueba si el precio que te piden está bien, si los metros cuadran y cuánto ITP pagarás.</li>
 </ul>
 """,
 }

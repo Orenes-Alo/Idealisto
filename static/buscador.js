@@ -89,6 +89,16 @@
           <td><a class="btn small" href="/?rc=${esc(x.rc)}#valorar" data-rc="${esc(x.rc)}">Valorar</a></td></tr>`).join('');
         res.innerHTML = `<p class="hint">${d.inmuebles.length} inmueble${d.inmuebles.length > 1 ? 's' : ''} en este número. Elige el tuyo:</p>
           <div class="scroll"><table class="b-tabla"><thead><tr><th>Planta y puerta</th><th>Uso</th><th>Referencia catastral</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;
+        if (modo === 'comprobar') res.querySelectorAll('a[data-rc]').forEach(a => {
+          a.textContent = 'Elegir';
+          a.addEventListener('click', ev => {
+            ev.preventDefault();
+            document.getElementById('rc').value = a.dataset.rc;
+            root.closest('details')?.removeAttribute('open');
+            const p = document.getElementById('precio');
+            if (p.value) document.getElementById('fc').requestSubmit(); else p.focus();
+          });
+        });
         if (modo === 'home') res.querySelectorAll('a[data-rc]').forEach(a => a.addEventListener('click', ev => {
           ev.preventDefault();
           const inp = document.getElementById('rc'); inp.value = a.dataset.rc; inp.dispatchEvent(new Event('input'));

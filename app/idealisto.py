@@ -38,7 +38,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import (FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
                                RedirectResponse, Response)
 
-from . import calculadoras, contenido, fiscal, guias
+from . import calculadoras, comprobar, contenido, fiscal, guias
 from .indexnow import INDEXNOW_KEY
 from . import orenes
 from .cuentas import COOKIE, SESION_DIAS, Cuentas, normalizar_telefono
@@ -149,6 +149,10 @@ def _db():
     con.execute("""CREATE TABLE IF NOT EXISTS leads(
         id INTEGER PRIMARY KEY, ts TEXT, email TEXT, rc TEXT, perfil TEXT,
         motivo TEXT, consentimiento INTEGER, enviado INTEGER DEFAULT 0)""")
+    try:  # origen: NULL = valorador; "comprobar" = «¿Está bien de precio?»
+        con.execute("ALTER TABLE valoraciones ADD COLUMN origen TEXT")
+    except sqlite3.OperationalError:
+        pass
     return con
 
 
@@ -159,13 +163,13 @@ CALLEJERO = Callejero([u.replace("/internal/avm/rc", "/internal/catastro/calleje
                       AVM_TOKEN, DB_PATH)
 
 
-def _log_valoracion(rc: str, data: dict | None, ok: bool, error: str | None = None):
+def _log_valoracion(rc: str, data: dict | None, ok: bool, error: str | None = None, origen: str | None = None):
     with _db_lock:
-        _CON.execute("INSERT INTO valoraciones(ts,rc_hash,uso,provincia,valor,ok,error) VALUES(?,?,?,?,?,?,?)", (
+        _CON.execute("INSERT INTO valoraciones(ts,rc_hash,uso,provincia,valor,ok,error,origen) VALUES(?,?,?,?,?,?,?,?)", (
             datetime.now(timezone.utc).isoformat(),
             hashlib.sha256(rc.encode()).hexdigest()[:16],  # no guardamos la RC en claro
             (data or {}).get("uso"), (data or {}).get("provincia"), (data or {}).get("valor_central"),
-            int(ok), error))
+            int(ok), error, origen))
         _CON.commit()
 
 
@@ -357,7 +361,7 @@ FOOT = r"""
     <div><strong>__BRAND__</strong> · __LEGAL__<br>
       Valoraciones automáticas orientativas. No constituyen una tasación oficial (Orden ECO/805/2003).<br>
       Datos catastrales: Dirección General del Catastro.</div>
-    <div><a href="/metodologia/">Metodología</a> · <a href="/equipo/">Equipo</a> · <a href="/guias/">Guías</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/privacidad/#cookies" onclick="if(window.idealistoCookies){event.preventDefault();idealistoCookies();}">Cookies</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
+    <div><a href="/metodologia/">Metodología</a> · <a href="/equipo/">Equipo</a> · <a href="/guias/">Guías</a> · <a href="/precio-vivienda/">Precio de la vivienda por zona</a> · <a href="/calculadoras/">Calculadoras</a> · <a href="/comprobar-precio/">¿Está bien de precio?</a> · <a href="/tasacion-referencia-catastral/">Tasación por referencia catastral</a> · <a href="/privacidad/">Privacidad</a> · <a href="/privacidad/#cookies" onclick="if(window.idealistoCookies){event.preventDefault();idealistoCookies();}">Cookies</a> · <a href="/aviso-legal/">Aviso legal</a> · <a href="mailto:__EMAIL__">__EMAIL__</a></div>
   </div>
 </footer>
 <script>
@@ -540,7 +544,7 @@ def buscador(modo: str, prov: str = "", mun: str = "") -> str:
     provs = json.dumps(PROVINCIAS, ensure_ascii=False).replace("</", "<\\/")
     return (f'<script type="application/json" id="provincias-json">{provs}</script>'
             f'<div class="buscador" data-modo="{modo}" data-prov="{prov}" data-mun="{mun}"></div>'
-            '<script src="/buscador.js?v=2" defer></script>')
+            '<script src="/buscador.js?v=3" defer></script>')
 
 
 SECUNDARIAS = {slug: render_secundaria(slug) for slug in contenido.PAGINAS}
@@ -600,6 +604,50 @@ def render_calc(slug: str | None) -> str:
 
 
 CALC_CACHE = {None: render_calc(None), **{k: render_calc(k) for k in calculadoras.CALCS}}
+
+FAQ_COMPROBAR = [
+    ("¿Cómo sé si un piso está bien de precio?",
+     "Compáralo con lo que se pide por inmuebles parecidos a su alrededor. Con la referencia catastral, Idealisto obtiene "
+     "del Catastro la superficie, el uso, el año y la ubicación exacta, lo valora con los comparables en venta de la zona "
+     "y te dice si el precio que piden es un gran precio, un precio justo, caro o sospechosamente barato."),
+    ("¿Qué precio es sospechosamente barato?",
+     "Marcamos como sospechoso un precio un 15 % por debajo del tramo bajo de los comparables (el percentil 25) o un 40 % "
+     "por debajo de la valoración, lo que quede más abajo. Casi siempre tiene explicación: ocupación, nuda propiedad, "
+     "cargas, un estado muy malo o unos metros que no cuadran."),
+    ("¿Dónde encuentro la referencia catastral de un piso en venta?",
+     "Pídesela al vendedor (está en el recibo del IBI y en la nota simple) o búscala tú con la dirección del anuncio: "
+     "provincia, municipio, calle y número, y eliges la planta y la puerta."),
+    ("¿Necesito registrarme?",
+     "No para saber si está bien de precio. Con tu cuenta gratuita ves además la valoración de mercado con su rango y el "
+     "precio al que se suele cerrar la venta, para negociar con datos."),
+    ("¿Es una tasación?",
+     "No. Es una comparación orientativa con precios de oferta de inmuebles comparables. Para una hipoteca necesitas una "
+     "tasación oficial hecha por una sociedad de tasación homologada (Orden ECO/805/2003)."),
+]
+
+
+def render_comprobar() -> str:
+    path = "/comprobar-precio/"
+    faq = "".join(f"<details><summary>{escape(q)}</summary><p>{escape(a)}</p></details>" for q, a in FAQ_COMPROBAR)
+    cuerpo = ((RAIZ / "app" / "comprobar.html").read_text(encoding="utf-8")
+              .replace("__BUSCADOR__", buscador("comprobar")).replace("__FAQ__", faq))
+    graph = [_org(),
+             {"@type": "WebApplication", "name": "¿Está bien de precio? Comprobador para compradores", "url": SITE_URL + path,
+              "applicationCategory": "FinanceApplication", "operatingSystem": "Web", "inLanguage": "es-ES",
+              "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+              "description": "Comprueba si el precio que piden por un piso o una casa es razonable, con su referencia catastral.",
+              "provider": {"@id": f"{SITE_URL}/#org"}},
+             {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}}
+                                                 for q, a in FAQ_COMPROBAR]},
+             {"@type": "BreadcrumbList", "itemListElement": [
+                 {"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE_URL + "/"},
+                 {"@type": "ListItem", "position": 2, "name": "¿Está bien de precio?", "item": SITE_URL + path}]}]
+    return pagina(path, "¿Está bien de precio? Compruébalo con la ref. catastral",
+                  "Pega la referencia catastral y el precio que te piden: te decimos si es buen precio, caro o sospechoso, "
+                  "contrastamos los metros y calculamos el ITP.", cuerpo, _ld(graph))
+
+
+COMPROBAR_HTML = render_comprobar()
 _BUSCADOR_ZONA = re.compile(r"__BUSCADOR__([^|]*)\|(.*?)__")
 
 
@@ -710,6 +758,51 @@ async def api_valorar(request: Request):
     vid = INFORMES.guardar_valoracion(u["id"], rc, json.dumps(data, ensure_ascii=False))
     threading.Thread(target=_actividad, args=(u["email"],), daemon=True).start()
     return JSONResponse({**para_publico(data), "vid": vid}, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/comprobar")
+async def api_comprobar(request: Request):
+    """«¿Está bien de precio?»: sin cuenta, el veredicto; con cuenta, también las cifras de la valoración."""
+    u = usuario_de(request)
+    if _limitado(_ip(request)):
+        return JSONResponse({"error": "Has hecho muchas consultas seguidas. Prueba en un rato."}, 429)
+    try:
+        body = await request.json()
+        precio = float(body.get("precio") or 0)
+        m2_anuncio = float(body["m2"]) if body.get("m2") else None
+    except Exception:
+        return JSONResponse({"error": "Petición no válida."}, 400)
+    rc = normalizar_rc(str(body.get("rc", "")))
+    ok, msg = validar_rc(rc)
+    if not ok:
+        return JSONResponse({"error": msg}, 422)
+    if not 3000 <= precio <= 20_000_000:
+        return JSONResponse({"error": "Introduce el precio que te piden, en euros."}, 422)
+    try:
+        data = valorar_inmueble(rc)
+    except AvmError as e:
+        code = str(e.data.get("error") or e.status)
+        _log_valoracion(rc, e.data, False, code, "comprobar")
+        if code in _MENSAJES:
+            return JSONResponse({"error": _MENSAJES[code], "codigo": code}, 404 if code == "rc_no_encontrada" else 422)
+        if e.status == 429:
+            return JSONResponse({"error": "Mucha gente consultando a la vez. Prueba en un minuto."}, 503)
+        return JSONResponse({"error": "El servicio de valoración no está disponible ahora mismo."}, 503)
+    if data.get("tipo_amplio") in FUERA_DE_ALCANCE:
+        _log_valoracion(rc, data, False, "fuera_de_alcance", "comprobar")
+        return JSONResponse({"error": "De momento esta herramienta compara viviendas, garajes y trasteros, no locales ni naves."}, 422)
+    _log_valoracion(rc, data, True, None, "comprobar")
+    r = comprobar.comprobar(data, precio, m2_anuncio)
+    pub = para_publico(data)
+    r["ficha"] = {k: pub.get(k) for k in ("direccion", "uso", "superficie_m2", "anio_construccion")}
+    r["confianza"] = data.get("confianza")
+    r["rc"] = rc
+    if not u:  # sin cuenta: veredicto, metros e ITP; las cifras de la valoración, con la cuenta gratuita
+        for k in ("valor_central", "valor_min", "valor_max", "umbral", "cierre_estimado"):
+            r[k] = None
+    else:
+        threading.Thread(target=_actividad, args=(u["email"],), daemon=True).start()
+    return JSONResponse(r, headers={"Cache-Control": "no-store"})
 
 
 def _actividad(email: str):
@@ -987,6 +1080,16 @@ def precio_vivienda_sin_barra():
     return RedirectResponse("/precio-vivienda/", 301)
 
 
+@app.get("/comprobar-precio/", response_class=HTMLResponse)
+def comprobar_precio():
+    return HTMLResponse(COMPROBAR_HTML, headers={"Cache-Control": "public, max-age=600"})
+
+
+@app.get("/comprobar-precio")
+def comprobar_precio_sin_barra():
+    return RedirectResponse("/comprobar-precio/", 301)
+
+
 # ── Páginas secundarias ─────────────────────────────────────────────────────
 @app.get("/{slug}/", response_class=HTMLResponse)
 def secundaria(slug: str):
@@ -1046,7 +1149,7 @@ Sitemap: {SITE_URL}/sitemap.xml
 """
 
 SITEMAP_PATHS = (["/"] + [f"/{s}/" for s in contenido.PAGINAS if s not in ("privacidad", "aviso-legal")]
-                 + ["/calculadoras/"] + [f"/calculadoras/{k}/" for k in calculadoras.CALCS])
+                 + ["/comprobar-precio/", "/calculadoras/"] + [f"/calculadoras/{k}/" for k in calculadoras.CALCS])
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
@@ -1091,6 +1194,7 @@ def llms():
 
 ## Uso
 - Web: {SITE_URL}/?rc=REFERENCIA_CATASTRAL (prellena el valorador)
+- ¿Está bien de precio? (compradores: referencia catastral + precio pedido → gran precio, justo, caro o sospechoso): {SITE_URL}/comprobar-precio/?rc=REFERENCIA&precio=EUROS
 - Metodología: {SITE_URL}/metodologia/
 - Quién está detrás: {SITE_URL}/equipo/
 - Guías (herencia, divorcio, venta, alquiler, subasta): {SITE_URL}/guias/
@@ -1117,6 +1221,8 @@ def _texto(html: str) -> str:
 @app.get("/llms-full.txt", response_class=PlainTextResponse)
 def llms_full():
     partes = [llms()]
+    faq_c = "\n".join(f"- {q} {a}" for q, a in FAQ_COMPROBAR)
+    partes.append(f"\n\n# ¿Está bien de precio el piso que vas a comprar?\nURL: {SITE_URL}/comprobar-precio/\n\n## Preguntas frecuentes\n{faq_c}")
     for slug, p in contenido.PAGINAS.items():
         if slug in ("privacidad", "aviso-legal"):
             continue
@@ -1135,7 +1241,7 @@ def indexnow_clave():
 
 
 ESTATICOS = {"logo.svg": "image/svg+xml", "favicon.svg": "image/svg+xml", "favicon.ico": "image/x-icon", "BingSiteAuth.xml": "application/xml", "og.png": "image/png",
-             "buscador.js": "application/javascript", "sw.js": "application/javascript", "calc.js": "application/javascript",
+             "buscador.js": "application/javascript", "comprobar.js": "application/javascript", "sw.js": "application/javascript", "calc.js": "application/javascript",
              "manifest.webmanifest": "application/manifest+json",
              "icono-192.png": "image/png", "icono-512.png": "image/png"}
 
